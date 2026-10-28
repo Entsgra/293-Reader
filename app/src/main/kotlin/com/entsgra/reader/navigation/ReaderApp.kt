@@ -23,13 +23,15 @@ import androidx.navigation.compose.rememberNavController
 import com.entsgra.reader.core.designsystem.component.ReaderBottomBar
 import com.entsgra.reader.core.designsystem.component.ReaderBottomBarItem
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
+import com.entsgra.reader.feature.library.BookRoute
 import com.entsgra.reader.feature.library.LibraryGraph
 import com.entsgra.reader.feature.library.libraryGraph
 import com.entsgra.reader.feature.log.logScreen
 import com.entsgra.reader.feature.reader.ReaderRoute
 import com.entsgra.reader.feature.reader.navigateToReader
 import com.entsgra.reader.feature.reader.readerScreen
-import com.entsgra.reader.feature.physical.shelfScreen
+import com.entsgra.reader.feature.physical.navigateToPhysicalBook
+import com.entsgra.reader.feature.physical.shelfGraph
 import com.entsgra.reader.feature.settings.settingsScreen
 
 /** Navigation shell: four top-level destinations in a bottom bar. Fog edge to edge. */
@@ -68,8 +70,11 @@ fun ReaderApp() {
 		) {
 			libraryGraph(navController, onRead = navController::navigateToReader)
 			readerScreen(onBack = { navController.popBackStack() })
-			shelfScreen()
-			logScreen()
+			shelfGraph(navController)
+			logScreen(
+				onOpenEbook = { navController.navigate(BookRoute(it)) },
+				onOpenPhysical = navController::navigateToPhysicalBook,
+			)
 			settingsScreen()
 		}
 		if (!reading) ReaderBottomBar {

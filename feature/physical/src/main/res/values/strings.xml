@@ -1,6 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="back">Back</string>
 	<string name="physical_title">Shelf</string>
-	<string name="physical_empty">No paper books yet. Adding them comes in a later build.</string>
+	<string name="physical_empty">No paper books yet. Add one to keep its page and log your reading.</string>
 	<string name="physical_add">Add book</string>
+	<string name="physical_now_reading">Now reading</string>
+	<string name="physical_page">Page</string>
+	<string name="physical_of">Of</string>
+	<string name="physical_percent">%1$d%%</string>
+	<string name="physical_status">Status</string>
+	<string name="physical_status_want">To read</string>
+	<string name="physical_status_reading">Reading</string>
+	<string name="physical_status_finished">Finished</string>
+	<string name="physical_status_abandoned">Set aside</string>
+	<string name="physical_added">Added</string>
+	<string name="physical_log">Log reading</string>
+	<string name="physical_sittings">Sittings</string>
+	<string name="physical_no_sittings">No reading logged yet. Log a sitting when you put the book down.</string>
+	<string name="physical_sitting_pages">Pages %1$d–%2$d</string>
+	<string name="physical_sitting_page">Page %1$d</string>
+	<string name="physical_title_field">Title</string>
+	<string name="physical_author_field">Author</string>
+	<string name="physical_pages_field">Pages</string>
+	<string name="physical_title_blank">Give the book a title.</string>
+	<string name="physical_pages_bad">Enter the page count as a number, or leave it empty.</string>
+	<string name="physical_from_field">From page</string>
+	<string name="physical_to_field">To page</string>
+	<string name="physical_minutes_field">Minutes</string>
+	<string name="physical_pages_range">Pages run from the first to the last, inside the book.</string>
+	<string name="physical_minutes_bad">Enter minutes from 1 to 1440.</string>
+	<string name="physical_edit">Edit details</string>
+	<string name="physical_delete">Delete</string>
+	<string name="physical_delete_title">Delete book</string>
+	<string name="physical_delete_body">The book and its logged reading go from the shelf and the log.</string>
+	<string name="physical_delete_sitting_title">Delete sitting</string>
+	<string name="physical_delete_sitting_body">This sitting goes from the book and the log.</string>
+	<string name="physical_delete_sitting_action">Delete sitting</string>
+	<string name="save">Save</string>
+	<string name="cancel">Cancel</string>
 </resources>

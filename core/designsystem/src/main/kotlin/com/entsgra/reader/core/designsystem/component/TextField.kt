@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import com.entsgra.reader.core.designsystem.theme.ReaderSize
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
@@ -48,6 +49,7 @@ fun ReaderTextField(
 	error: String? = null,
 	imeAction: ImeAction = ImeAction.Done,
 	capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
+	keyboardType: KeyboardType = KeyboardType.Text,
 	onImeAction: () -> Unit = {},
 ) {
 	val colors = ReaderTheme.colors
@@ -61,7 +63,11 @@ fun ReaderTextField(
 			textStyle = ReaderTheme.type.body.copy(color = colors.ink),
 			cursorBrush = SolidColor(colors.action),
 			interactionSource = interaction,
-			keyboardOptions = KeyboardOptions(capitalization = capitalization, imeAction = imeAction),
+			keyboardOptions = KeyboardOptions(
+				capitalization = capitalization,
+				keyboardType = keyboardType,
+				imeAction = imeAction,
+			),
 			keyboardActions = KeyboardActions(onAny = { onImeAction() }),
 			modifier = Modifier
 				.fillMaxWidth()

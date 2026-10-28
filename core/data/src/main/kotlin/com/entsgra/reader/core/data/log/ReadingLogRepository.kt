@@ -57,6 +57,12 @@ class ReadingLogRepository @Inject constructor(
 		emitAll(database.get().readingSessionDao().observeReadingMs(weekStart(now, zone)))
 	}
 
+	/** Milliseconds read since midnight, local time. */
+	fun readToday(now: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()): Flow<Long> = flow {
+		val midnight = Instant.ofEpochMilli(now).atZone(zone).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
+		emitAll(database.get().readingSessionDao().observeReadingMs(midnight))
+	}
+
 	private companion object {
 		const val PAGE_SIZE = 50
 	}

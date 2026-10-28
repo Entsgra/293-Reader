@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="log_title">Log</string>
-	<string name="log_empty">No reading sessions yet. They appear here once you read.</string>
+	<string name="log_empty">No reading yet. Sittings of 30 seconds or more in the reader appear here, with reading you log for paper books on the shelf.</string>
+	<string name="log_this_week">Hours this week</string>
+	<string name="log_minutes">%1$d min</string>
+	<string name="log_today">Today</string>
+	<string name="log_yesterday">Yesterday</string>
 </resources>

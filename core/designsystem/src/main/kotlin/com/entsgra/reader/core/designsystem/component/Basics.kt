@@ -147,12 +147,12 @@ fun ReaderRow(
 				.fillMaxWidth()
 				.heightIn(min = ReaderSize.rowHeight)
 				.then(
-					if (onClick != null) {
+					if (onClick != null || onLongClick != null) {
 						Modifier.combinedClickable(
 							role = Role.Button,
 							onLongClickLabel = onLongClickLabel,
 							onLongClick = onLongClick,
-							onClick = onClick,
+							onClick = onClick ?: {},
 						)
 					} else {
 						Modifier
