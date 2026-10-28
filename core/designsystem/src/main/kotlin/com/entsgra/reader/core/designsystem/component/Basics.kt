@@ -3,6 +3,7 @@ package com.entsgra.reader.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,36 +11,66 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.entsgra.reader.core.designsystem.icon.ReaderIcons
 import com.entsgra.reader.core.designsystem.theme.ReaderShapes
 import com.entsgra.reader.core.designsystem.theme.ReaderSize
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
 
-/** Screen title in `display`, uppercase, with `space-12` of air above. Stands alone. */
+/**
+ * Screen title in `display`, uppercase, with `space-12` of air above. Stands alone. With
+ * [onBack], a back button sits in that air, its icon lined up with the title.
+ */
 @Composable
-fun ScreenTitle(text: String, modifier: Modifier = Modifier) {
-	Text(
-		text = text.uppercase(),
-		style = ReaderTheme.type.display,
-		color = ReaderTheme.colors.ink,
-		modifier = modifier
-			.padding(top = ReaderSpacing.space12, bottom = ReaderSpacing.space6)
-			.semantics { heading() },
-	)
+fun ScreenTitle(
+	text: String,
+	modifier: Modifier = Modifier,
+	onBack: (() -> Unit)? = null,
+	backLabel: String? = null,
+) {
+	Column(modifier) {
+		if (onBack != null) {
+			Box(
+				modifier = Modifier
+					.offset(x = -(ReaderSize.targetMin - ReaderSize.icon) / 2)
+					.size(ReaderSize.targetMin)
+					.clickable(role = Role.Button, onClickLabel = backLabel, onClick = onBack)
+					.semantics { contentDescription = backLabel.orEmpty() },
+				contentAlignment = Alignment.Center,
+			) {
+				CompositionLocalProvider(LocalContentColor provides ReaderTheme.colors.ink) {
+					ReaderIcon(ReaderIcons.Back)
+				}
+			}
+		}
+		Text(
+			text = text.uppercase(),
+			style = ReaderTheme.type.display,
+			color = ReaderTheme.colors.ink,
+			modifier = Modifier
+				.padding(top = if (onBack == null) ReaderSpacing.space12 else 0.dp, bottom = ReaderSpacing.space6)
+				.semantics { heading() },
+		)
+	}
 }
 
 /** Section title in `headline`, uppercase. */
@@ -87,6 +118,9 @@ fun ReaderRow(
 	trailing: String? = null,
 	leadingIcon: ImageVector? = null,
 	onClick: (() -> Unit)? = null,
+	onLongClick: (() -> Unit)? = null,
+	onLongClickLabel: String? = null,
+	color: Color = ReaderTheme.colors.ink,
 ) {
 	val colors = ReaderTheme.colors
 	Column(modifier.fillMaxWidth()) {
@@ -94,16 +128,29 @@ fun ReaderRow(
 			modifier = Modifier
 				.fillMaxWidth()
 				.heightIn(min = ReaderSize.rowHeight)
-				.then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+				.then(
+					if (onClick != null) {
+						Modifier.combinedClickable(
+							role = Role.Button,
+							onLongClickLabel = onLongClickLabel,
+							onLongClick = onLongClick,
+							onClick = onClick,
+						)
+					} else {
+						Modifier
+					},
+				)
 				.padding(vertical = ReaderSpacing.space2),
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.spacedBy(ReaderSpacing.space3),
 		) {
-			if (leadingIcon != null) ReaderIcon(leadingIcon)
+			if (leadingIcon != null) {
+				CompositionLocalProvider(LocalContentColor provides color) { ReaderIcon(leadingIcon) }
+			}
 			Text(
 				text = title,
 				style = ReaderTheme.type.title,
-				color = colors.ink,
+				color = color,
 				modifier = Modifier.weight(1f),
 			)
 			if (trailing != null) {

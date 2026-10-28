@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.entsgra.reader.core.model.AppTheme
+import com.entsgra.reader.core.model.LibrarySort
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +35,20 @@ class SettingsRepository @Inject constructor(
 		store.edit { it[THEME] = theme.name }
 	}
 
+	val librarySort: Flow<LibrarySort> = store.data
+		.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+		.map { prefs ->
+			prefs[LIBRARY_SORT]?.let { name -> LibrarySort.entries.firstOrNull { it.name == name } }
+				?: LibrarySort.TITLE
+		}
+		.distinctUntilChanged()
+
+	suspend fun setLibrarySort(sort: LibrarySort) {
+		store.edit { it[LIBRARY_SORT] = sort.name }
+	}
+
 	private companion object {
 		val THEME = stringPreferencesKey("theme")
+		val LIBRARY_SORT = stringPreferencesKey("library_sort")
 	}
 }

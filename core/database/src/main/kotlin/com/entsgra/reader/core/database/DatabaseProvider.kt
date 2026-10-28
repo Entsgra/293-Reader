@@ -39,6 +39,7 @@ class DatabaseProvider @Inject constructor(
 		return Room.databaseBuilder(context, ReaderDatabase::class.java, NAME)
 			.openHelperFactory(factory)
 			.setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+			.addMigrations(*ALL_MIGRATIONS)
 			.build()
 			.also { it.openHelper.writableDatabase } // Open now, on IO, so key errors surface here.
 	}

@@ -58,7 +58,7 @@ the others below or in `licenses/`.
 | `androidx.loader` | loader | 1.0.0 | Apache-2.0 |
 | `androidx.navigation` | navigation-common, navigation-common-android, navigation-compose, navigation-compose-android, navigation-runtime, navigation-runtime-android | 2.10.2 | Apache-2.0 |
 | `androidx.navigationevent` | navigationevent, navigationevent-android, navigationevent-compose, navigationevent-compose-android | 1.1.2 | Apache-2.0 |
-| `androidx.paging` | paging-common, paging-common-android | 3.3.2 | Apache-2.0 |
+| `androidx.paging` | paging-common, paging-common-android, paging-compose, paging-compose-android | 3.5.3 | Apache-2.0 |
 | `androidx.profileinstaller` | profileinstaller | 1.4.0 | Apache-2.0 |
 | `androidx.room` | room-common, room-common-jvm, room-ktx, room-paging, room-paging-android, room-runtime, room-runtime-android | 2.8.5 | Apache-2.0 |
 | `androidx.savedstate` | savedstate, savedstate-android, savedstate-compose, savedstate-compose-android, savedstate-ktx | 1.5.0 | Apache-2.0 |
@@ -123,7 +123,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 | Kotlin Gradle plugin, Compose compiler plugin, serialization plugin 2.4.21 | Apache-2.0 |
 | KSP 2.3.12 | Apache-2.0 |
 | Hilt Gradle plugin and compiler 2.60.1 | Apache-2.0 |
-| Room compiler and Gradle plugin 2.8.5 | Apache-2.0 |
+| Room compiler, Gradle plugin and room-testing 2.8.5 | Apache-2.0 |
 | Compose UI tooling (debug builds only) | Apache-2.0 |
 | JUnit 4.13.2 | EPL-1.0 |
 | Hamcrest 1.3 (via JUnit) | BSD-3-Clause |

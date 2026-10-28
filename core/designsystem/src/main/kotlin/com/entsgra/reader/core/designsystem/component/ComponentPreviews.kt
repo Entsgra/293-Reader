@@ -42,6 +42,13 @@ private fun Gallery(theme: AppTheme) {
 				onSelect = { chip = it },
 				label = { it.name },
 			)
+			ReaderTextField(value = "", onValueChange = {}, label = "Search", placeholder = "Title or author", leadingIcon = ReaderIcons.Search)
+			ReaderTextField(value = "Comics", onValueChange = {}, label = "Name", error = "A folder with that name is already here.")
+			Row(horizontalArrangement = Arrangement.spacedBy(ReaderSpacing.space3)) {
+				CoverTile(title = "The Rings of Saturn", formatLabel = "PDF", image = null, onClick = {}, modifier = Modifier.weight(1f))
+				CoverTile(title = "Vertigo", formatLabel = "EPUB", image = null, onClick = {}, modifier = Modifier.weight(1f))
+				CoverTilePlaceholder(Modifier.weight(1f))
+			}
 			ReaderRow(title = "Austerlitz", trailing = "47%", leadingIcon = ReaderIcons.Folder, onClick = {})
 			ReaderRow(title = "Vertigo", trailing = "Done", onClick = {})
 			LiveStatus("Reading now")
@@ -62,18 +69,18 @@ private fun Gallery(theme: AppTheme) {
 	}
 }
 
-@Preview(name = "Light", widthDp = 360, heightDp = 1400)
+@Preview(name = "Light", widthDp = 360, heightDp = 1900)
 @Composable
 private fun GalleryLight() = Gallery(AppTheme.LIGHT)
 
-@Preview(name = "Dark", widthDp = 360, heightDp = 1400)
+@Preview(name = "Dark", widthDp = 360, heightDp = 1900)
 @Composable
 private fun GalleryDark() = Gallery(AppTheme.DARK)
 
-@Preview(name = "Light yellow", widthDp = 360, heightDp = 1400)
+@Preview(name = "Light yellow", widthDp = 360, heightDp = 1900)
 @Composable
 private fun GalleryYellow() = Gallery(AppTheme.YELLOW)
 
-@Preview(name = "Light pink", widthDp = 360, heightDp = 1400)
+@Preview(name = "Light pink", widthDp = 360, heightDp = 1900)
 @Composable
 private fun GalleryPink() = Gallery(AppTheme.PINK)

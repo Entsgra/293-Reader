@@ -11,7 +11,7 @@ Distributed through GitHub releases only, self-signed.
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Scaffold, theme and components, navigation shell, encrypted database, data model | Done |
-| 2 | Import, library UI, folders | |
+| 2 | Import, library UI, folders | Done |
 | 3 | PDF and comic readers (CBZ, CB7) | |
 | 4 | EPUB and TXT readers | |
 | 5 | Physical book tracking, reading log UI | |
@@ -23,6 +23,23 @@ Distributed through GitHub releases only, self-signed.
 PDF, EPUB, CBZ, CB7, TXT. Each format sits behind `reader:api` (`BookFormat`, `PagedDocument`,
 `FlowDocument`), so MOBI, AZW3 or FB2 can be added later as new modules. CBR is not supported:
 the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI license.
+
+## Library
+
+- **Import:** the system file picker (Storage Access Framework), several files at once. Each
+  file is copied into app storage, encrypted on the way in. The format comes from the file's
+  first bytes, not its name. A file already in the library (same SHA-256) is skipped, and a
+  RAR comic (CBR) is refused with a note to convert it to CBZ. Import runs in the background
+  and survives leaving the screen.
+- **Folders:** nested to any depth. Create, rename, move (never into themselves) and delete.
+  Deleting a folder deletes everything in it, files included, after a confirmation that says
+  how much will go.
+- **Books:** cover grid, sorted by title, last opened or date added. Long press a cover or a
+  folder for its actions; tap a cover for the book screen.
+- **Search:** title and author, every word as a prefix, ignoring case and accents ("brucke"
+  finds "Brücke"). Books in locked folders never appear in results.
+- **Covers:** stored encrypted and decoded at grid size. Formats supply them from Phase 3 on;
+  until then a cover shows the title and format.
 
 ## Build
 
@@ -71,8 +88,9 @@ for all four themes are in `ComponentPreviews.kt`.
 ## Security
 
 - **Files:** Tink StreamingAead (AES256_GCM_HKDF_1MB), keyset wrapped by an Android Keystore
-  master key. The file name is bound as associated data. Reads are seekable, so readers never
-  write plaintext to disk.
+  master key. Books and covers live in no-backup storage under random names; the file name is
+  bound as associated data. Reads are seekable, so readers never write plaintext to disk.
+  Files a crash leaves without a database row are swept at startup.
 - **Database:** SQLCipher. A random 256-bit passphrase, wrapped by a Keystore-backed AEAD,
   stored in no-backup storage. The database opens off the main thread.
 - **Backups:** disabled. Keystore keys cannot leave the device, so a backup could not be read

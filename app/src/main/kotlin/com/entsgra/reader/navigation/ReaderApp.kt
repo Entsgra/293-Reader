@@ -23,8 +23,8 @@ import androidx.navigation.compose.rememberNavController
 import com.entsgra.reader.core.designsystem.component.ReaderBottomBar
 import com.entsgra.reader.core.designsystem.component.ReaderBottomBarItem
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
-import com.entsgra.reader.feature.library.LibraryRoute
-import com.entsgra.reader.feature.library.libraryScreen
+import com.entsgra.reader.feature.library.LibraryGraph
+import com.entsgra.reader.feature.library.libraryGraph
 import com.entsgra.reader.feature.log.logScreen
 import com.entsgra.reader.feature.physical.shelfScreen
 import com.entsgra.reader.feature.settings.settingsScreen
@@ -43,7 +43,7 @@ fun ReaderApp() {
 	) {
 		NavHost(
 			navController = navController,
-			startDestination = LibraryRoute,
+			startDestination = LibraryGraph,
 			modifier = Modifier
 				.weight(1f)
 				.windowInsetsPadding(
@@ -55,7 +55,7 @@ fun ReaderApp() {
 			popEnterTransition = { EnterTransition.None },
 			popExitTransition = { ExitTransition.None },
 		) {
-			libraryScreen()
+			libraryGraph(navController)
 			shelfScreen()
 			logScreen()
 			settingsScreen()
@@ -66,10 +66,17 @@ fun ReaderApp() {
 				ReaderBottomBarItem(
 					selected = selected,
 					onClick = {
-						navController.navigate(item.route) {
-							popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-							launchSingleTop = true
-							restoreState = true
+						if (selected) {
+							// Tapping the open tab again returns to its first screen.
+							navController.navigate(item.route) {
+								popUpTo(item.route) { inclusive = true }
+							}
+						} else {
+							navController.navigate(item.route) {
+								popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+								launchSingleTop = true
+								restoreState = true
+							}
 						}
 					},
 					icon = item.icon,

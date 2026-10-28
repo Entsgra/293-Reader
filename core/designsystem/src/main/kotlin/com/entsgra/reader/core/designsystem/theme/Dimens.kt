@@ -54,6 +54,13 @@ object ReaderSize {
 	val errorDisc = 24.dp
 	val icon = 24.dp
 
+	/** Narrowest cover in the library grid; the grid fits as many as the width allows. */
+	val coverMinWidth = 104.dp
+	/** Width over height of a cover tile. */
+	const val COVER_ASPECT = 2f / 3f
+	/** Dialogs never grow wider than this on tablets. */
+	val dialogMaxWidth = 480.dp
+
 	val switchTrackWidth = 44.dp
 	val switchTrackHeight = 24.dp
 	val switchKnob = 14.dp

@@ -3,6 +3,82 @@
 	<string name="library_title">Library</string>
 	<string name="library_books">Books</string>
 	<string name="library_folders">Folders</string>
-	<string name="library_empty">No books yet. Import comes in the next build.</string>
+	<string name="library_empty">No books yet. Import PDF, EPUB, CBZ, CB7 or TXT files.</string>
+	<string name="library_folder_empty">Nothing in this folder yet.</string>
 	<string name="library_import">Import</string>
+	<string name="library_new_folder">New folder</string>
+	<string name="library_search">Search</string>
+	<string name="library_search_hint">Title or author</string>
+	<string name="library_search_clear">Clear search</string>
+	<string name="library_results">Results</string>
+	<string name="library_no_results">No books match. Check the spelling or try fewer words.</string>
+	<string name="library_sort">Sort</string>
+	<string name="sort_title">Title</string>
+	<string name="sort_recent">Recent</string>
+	<string name="sort_added">Added</string>
+	<string name="back">Back</string>
+	<string name="show_actions">Show actions</string>
+
+	<string name="importing">Importing %1$d of %2$d</string>
+	<plurals name="import_imported">
+		<item quantity="one">%d book imported.</item>
+		<item quantity="other">%d books imported.</item>
+	</plurals>
+	<plurals name="import_duplicates">
+		<item quantity="one">%d was already in the library.</item>
+		<item quantity="other">%d were already in the library.</item>
+	</plurals>
+	<string name="import_nothing">Nothing was imported.</string>
+	<string name="import_failed_unsupported">%s is not a PDF, EPUB, CBZ, CB7 or TXT file.</string>
+	<string name="import_failed_rar">%s is a RAR comic (CBR), which is not supported. Convert it to CBZ and import it again.</string>
+	<string name="import_failed_unreadable">%s could not be read. Pick it again from where it is stored.</string>
+	<string name="import_failed_no_space">%s did not fit. Free some storage and import it again.</string>
+	<string name="import_failed_other">%s could not be imported. Import it again.</string>
+	<plurals name="import_more_failures">
+		<item quantity="one">%d more file could not be imported.</item>
+		<item quantity="other">%d more files could not be imported.</item>
+	</plurals>
+	<string name="import_done">Done</string>
+
+	<string name="open">Open</string>
+	<string name="rename">Rename</string>
+	<string name="move">Move</string>
+	<string name="delete">Delete</string>
+	<string name="cancel">Cancel</string>
+	<string name="save">Save</string>
+	<string name="create">Create</string>
+	<string name="edit_details">Edit details</string>
+
+	<string name="folder_name">Name</string>
+	<string name="folder_name_blank">Enter a name.</string>
+	<string name="folder_name_too_long">Use 80 characters or fewer.</string>
+	<string name="folder_name_taken">A folder with that name is already here. Pick another name.</string>
+	<string name="move_title">Move to</string>
+	<string name="move_current">Here now</string>
+
+	<string name="delete_folder_title">Delete folder?</string>
+	<string name="delete_folder_empty">Deletes this empty folder.</string>
+	<string name="delete_folder_body">Deletes this folder and everything in it: %1$s and %2$s, with their bookmarks and reading log. This cannot be undone.</string>
+	<plurals name="count_books">
+		<item quantity="one">%d book</item>
+		<item quantity="other">%d books</item>
+	</plurals>
+	<plurals name="count_folders">
+		<item quantity="one">%d folder</item>
+		<item quantity="other">%d folders</item>
+	</plurals>
+	<string name="delete_book_title">Delete book?</string>
+	<string name="delete_book_body">Deletes the file with its bookmarks and reading log. This cannot be undone.</string>
+
+	<string name="book_pages">Pages</string>
+	<string name="book_format">Format</string>
+	<string name="book_read">Read</string>
+	<string name="book_read_later">Opening books comes in the next build.</string>
+	<string name="book_title">Title</string>
+	<string name="book_title_blank">Enter a title.</string>
+	<string name="book_author">Author</string>
+	<string name="book_folder">Folder</string>
+	<string name="book_added">Added</string>
+	<string name="book_size">Size</string>
+	<string name="book_unknown">Unknown</string>
 </resources>

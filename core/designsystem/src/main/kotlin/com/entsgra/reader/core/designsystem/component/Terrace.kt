@@ -4,7 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -48,6 +48,8 @@ fun Terrace(
 	shape: Shape = ReaderShapes.none,
 	role: Role = Role.Button,
 	onClickLabel: String? = null,
+	onLongClick: (() -> Unit)? = null,
+	onLongClickLabel: String? = null,
 	content: @Composable BoxScope.() -> Unit,
 ) {
 	val colors = ReaderTheme.colors
@@ -87,12 +89,14 @@ fun Terrace(
 				.graphicsLayer { translationY = drop.value.toPx() }
 				.then(
 					if (onClick != null) {
-						Modifier.clickable(
+						Modifier.combinedClickable(
 							interactionSource = interaction,
 							indication = LocalIndication.current,
 							enabled = enabled,
 							onClickLabel = onClickLabel,
 							role = role,
+							onLongClickLabel = onLongClickLabel,
+							onLongClick = onLongClick,
 							onClick = onClick,
 						)
 					} else {

@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.ForeignKey
+import androidx.room.FtsOptions
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.entsgra.reader.core.model.Book
@@ -51,8 +52,11 @@ data class BookEntity(
 	@ColumnInfo(name = "last_opened_at") val lastOpenedAt: Long?,
 )
 
-/** Full-text index over title and author. Room keeps it in sync with `books` via triggers. */
-@Fts4(contentEntity = BookEntity::class)
+/**
+ * Full-text index over title and author. Room keeps it in sync with `books` via triggers.
+ * unicode61 folds case and diacritics for every script, so "uber" finds "Über".
+ */
+@Fts4(contentEntity = BookEntity::class, tokenizer = FtsOptions.TOKENIZER_UNICODE61)
 @Entity(tableName = "books_fts")
 data class BookFtsEntity(
 	val title: String,

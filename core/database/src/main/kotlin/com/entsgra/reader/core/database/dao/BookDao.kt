@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.entsgra.reader.core.database.entity.BookEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookDao {
@@ -36,14 +37,27 @@ interface BookDao {
 	@Query("SELECT * FROM books WHERE id = :id")
 	suspend fun get(id: Long): BookEntity?
 
+	@Query("SELECT * FROM books WHERE id = :id")
+	fun observe(id: Long): Flow<BookEntity?>
+
 	@Query("SELECT * FROM books WHERE content_hash = :hash LIMIT 1")
 	suspend fun findByHash(hash: String): BookEntity?
+
+	/** Every stored file name, book and cover, for sweeping orphans left by a crash. */
+	@Query("SELECT file_name FROM books UNION ALL SELECT cover_file_name FROM books WHERE cover_file_name IS NOT NULL")
+	suspend fun allFileNames(): List<String>
 
 	@Insert
 	suspend fun insert(book: BookEntity): Long
 
 	@Update
 	suspend fun update(book: BookEntity)
+
+	@Query("UPDATE books SET title = :title, author = :author WHERE id = :id")
+	suspend fun updateDetails(id: Long, title: String, author: String?)
+
+	@Query("UPDATE books SET folder_id = :folderId WHERE id = :id")
+	suspend fun move(id: Long, folderId: Long?)
 
 	@Query("UPDATE books SET last_opened_at = :at WHERE id = :id")
 	suspend fun markOpened(id: Long, at: Long)

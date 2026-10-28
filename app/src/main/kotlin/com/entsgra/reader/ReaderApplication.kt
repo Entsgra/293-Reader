@@ -2,6 +2,7 @@ package com.entsgra.reader
 
 import android.app.Application
 import com.entsgra.reader.core.data.SettingsRepository
+import com.entsgra.reader.core.data.library.BookImporter
 import com.entsgra.reader.core.database.DatabaseProvider
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 class ReaderApplication : Application() {
 	@Inject lateinit var databaseProvider: DatabaseProvider
 	@Inject lateinit var settings: SettingsRepository
+	@Inject lateinit var importer: BookImporter
 
 	private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -22,7 +24,11 @@ class ReaderApplication : Application() {
 		super.onCreate()
 		// Unwrap the key and open the encrypted database off the main thread while the first
 		// frame draws, so the library's first query does not wait on Keystore.
-		appScope.launch { databaseProvider.get() }
+		appScope.launch {
+			databaseProvider.get()
+			// Files a crash left behind without a database row.
+			importer.sweepOrphans()
+		}
 		// MainActivity holds its first frame until the theme is known; start the read now so
 		// DataStore has it cached by then.
 		appScope.launch { settings.theme.first() }
