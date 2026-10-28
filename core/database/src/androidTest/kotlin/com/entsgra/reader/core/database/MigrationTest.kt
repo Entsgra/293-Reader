@@ -47,6 +47,24 @@ class MigrationTest {
 		}
 	}
 
+	@Test
+	fun v2To3MarksExistingBooksForMetadata() {
+		helper.createDatabase(NAME, 2).use { db ->
+			db.execSQL(
+				"INSERT INTO books (folder_id, title, author, format, file_name, file_size, content_hash, " +
+					"reading_direction, spread_mode, added_at) " +
+					"VALUES (NULL, 'Vertigo', NULL, 'CBZ', 'f', 1, 'h', 'LTR', 'AUTO', 1)",
+			)
+		}
+
+		val db = helper.runMigrationsAndValidate(NAME, 3, true, *ALL_MIGRATIONS)
+
+		db.query("SELECT metadata_version FROM books").use {
+			assertThat(it.moveToFirst()).isTrue()
+			assertThat(it.getInt(0)).isEqualTo(0)
+		}
+	}
+
 	private companion object {
 		const val NAME = "migration-test.db"
 	}

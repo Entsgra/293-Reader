@@ -2,6 +2,7 @@ package com.entsgra.reader.reader.api
 
 import android.graphics.Bitmap
 import com.entsgra.reader.core.model.Locator
+import com.entsgra.reader.core.model.ReadingDirection
 
 /** An open book. Close it to free native and memory resources. */
 sealed interface BookDocument : Releasable {
@@ -11,6 +12,8 @@ sealed interface BookDocument : Releasable {
 data class BookMetadata(
 	val title: String?,
 	val author: String?,
+	/** Set when the file says how it reads, such as a manga's ComicInfo; null to keep the default. */
+	val readingDirection: ReadingDirection? = null,
 )
 
 /** Fixed pages: PDF and comics. */

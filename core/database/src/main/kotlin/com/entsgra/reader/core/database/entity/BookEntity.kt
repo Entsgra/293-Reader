@@ -50,6 +50,12 @@ data class BookEntity(
 	@ColumnInfo(name = "spread_mode") val spreadMode: SpreadMode = SpreadMode.AUTO,
 	@ColumnInfo(name = "added_at") val addedAt: Long,
 	@ColumnInfo(name = "last_opened_at") val lastOpenedAt: Long?,
+	/**
+	 * Which version of metadata extraction (title, author, pages, cover) last ran on this book.
+	 * Books below the current version are filled in at startup, so a format reader added later
+	 * gives books imported before it their covers.
+	 */
+	@ColumnInfo(name = "metadata_version", defaultValue = "0") val metadataVersion: Int = 0,
 )
 
 /**

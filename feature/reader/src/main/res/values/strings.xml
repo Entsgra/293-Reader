@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="back">Back</string>
+	<string name="reader_page_of">%1$d of %2$d</string>
+	<string name="reader_pages_of">%1$d–%2$d of %3$d</string>
+	<string name="reader_page">Page</string>
+	<string name="reader_direction">Direction</string>
+	<string name="reader_ltr">Left to right</string>
+	<string name="reader_rtl">Right to left</string>
+	<string name="reader_spread">Pages on screen</string>
+	<string name="reader_spread_single">One</string>
+	<string name="reader_spread_double">Two</string>
+	<string name="reader_spread_auto">Auto</string>
+	<string name="reader_error_title">Can\'t open</string>
+	<string name="reader_error_protected">This file is password protected. Remove the password in another app, then import it again.</string>
+	<string name="reader_error_damaged">This file is damaged or incomplete. Import a fresh copy.</string>
+	<string name="reader_error_empty">This comic has no page images. Check the archive and import it again.</string>
+	<string name="reader_error_unsupported">This format opens in a later update.</string>
+</resources>

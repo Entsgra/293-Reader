@@ -139,7 +139,7 @@ class BookImporter @Inject constructor(
 					lastOpenedAt = null,
 				),
 			)
-			enrich(id, target, copy)
+			enrich(id, target, copy.size, copy.format, keepDetails = false)
 			return Outcome.Imported
 		} catch (e: CancellationException) {
 			target.delete()
@@ -168,33 +168,57 @@ class BookImporter @Inject constructor(
 	}
 
 	/**
-	 * Title, author, page count and cover from the format, when one is registered. Best effort:
-	 * a book whose metadata cannot be read is still imported under its file name.
+	 * Fills in metadata for books imported before their format had a reader, or before the
+	 * current [METADATA_VERSION]. Keeps titles and authors the person may have edited. Call once
+	 * at startup, after [sweepOrphans].
 	 */
-	private suspend fun enrich(id: Long, file: File, copy: Copy.Done) {
-		val format = formats.forId(copy.format) ?: return
+	suspend fun backfillMetadata() {
+		val books = database.get().bookDao()
+		val pending = books.withMetadataBefore(METADATA_VERSION, formats.ids.map { it.name })
+		for (book in pending) {
+			// Per book, so an import started meanwhile waits for one book, not the whole pass.
+			storage.withLock {
+				withContext(Dispatchers.IO) {
+					enrich(book.id, files.book(book.fileName), book.fileSize, book.format, keepDetails = true)
+				}
+			}
+		}
+	}
+
+	/**
+	 * Title, author, page count, reading direction and cover from the format, when one is
+	 * registered. Best effort: a book whose metadata cannot be read keeps its file name as title,
+	 * and is not retried until [METADATA_VERSION] changes. With [keepDetails], an existing title
+	 * stays and an existing author is only filled when empty.
+	 */
+	private suspend fun enrich(id: Long, file: File, size: Long, format: BookFormatId, keepDetails: Boolean) {
+		val reader = formats.forId(format) ?: return
+		val books = database.get().bookDao()
 		try {
-			format.open(EncryptedBookSource(file, copy.size, cipher)).use { doc ->
+			reader.open(EncryptedBookSource(file, size, cipher)).use { doc ->
+				val book = books.get(id) ?: return
 				val cover = when (doc) {
 					is PagedDocument -> doc.cover(CoverStore.COVER_WIDTH, CoverStore.COVER_HEIGHT)
 					is FlowDocument -> doc.cover(CoverStore.COVER_WIDTH, CoverStore.COVER_HEIGHT)
 				}
 				val coverName = cover?.let { bitmap -> covers.save(bitmap).also { bitmap.recycle() } }
-				val books = database.get().bookDao()
-				val book = books.get(id) ?: return
-				books.update(
-					book.copy(
-						title = doc.metadata.title?.takeIf { it.isNotBlank() }?.trim() ?: book.title,
-						author = doc.metadata.author?.takeIf { it.isNotBlank() }?.trim(),
-						pageCount = (doc as? PagedDocument)?.pageCount,
-						coverFileName = coverName,
-					),
+				val title = doc.metadata.title?.trim()?.takeIf { it.isNotEmpty() }
+				val author = doc.metadata.author?.trim()?.takeIf { it.isNotEmpty() }
+				books.applyMetadata(
+					id = id,
+					title = if (keepDetails) book.title else title ?: book.title,
+					author = if (keepDetails) book.author ?: author else author,
+					pageCount = (doc as? PagedDocument)?.pageCount ?: book.pageCount,
+					coverFileName = coverName ?: book.coverFileName,
+					direction = doc.metadata.readingDirection ?: book.readingDirection,
+					version = METADATA_VERSION,
 				)
 			}
 		} catch (e: CancellationException) {
 			throw e
 		} catch (_: Exception) {
 			// Keep the book; the reader reports a broken file when it is opened.
+			books.setMetadataVersion(id, METADATA_VERSION)
 		}
 	}
 
@@ -231,8 +255,10 @@ class BookImporter @Inject constructor(
 		data class Failed(val reason: ImportFailure.Reason) : Outcome
 	}
 
-	private companion object {
-		const val BUFFER_BYTES = 64 * 1024
+	companion object {
+		/** Bump when formats learn to extract more, so existing books are read again. */
+		const val METADATA_VERSION = 1
+		private const val BUFFER_BYTES = 64 * 1024
 	}
 }
 

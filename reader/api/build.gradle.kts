@@ -5,4 +5,8 @@ plugins {
 dependencies {
 	api(project(":core:model"))
 	implementation(libs.kotlinx.coroutines.core)
+
+	androidTestImplementation(libs.androidx.test.runner)
+	androidTestImplementation(libs.androidx.test.ext.junit)
+	androidTestImplementation(libs.truth)
 }

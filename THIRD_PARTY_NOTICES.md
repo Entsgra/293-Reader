@@ -68,6 +68,8 @@ the others below or in `licenses/`.
 | `androidx.versionedparcelable` | versionedparcelable | 1.1.1 | Apache-2.0 |
 | `androidx.viewpager` | viewpager | 1.0.0 | Apache-2.0 |
 | `androidx.window` | window, window-core, window-core-android | 1.5.0 | Apache-2.0 |
+| `commons-codec` | commons-codec | 1.19.0 | Apache-2.0 |
+| `commons-io` | commons-io | 2.20.0 | Apache-2.0 |
 | `com.google.code.findbugs` | jsr305 | 3.0.2 | Apache-2.0 |
 | `com.google.code.gson` | gson | 2.13.2 | Apache-2.0 |
 | `com.google.crypto.tink` | tink-android | 1.24.0 | Apache-2.0 |
@@ -78,12 +80,30 @@ the others below or in `licenses/`.
 | `jakarta.inject` | jakarta.inject-api | 2.0.1 | Apache-2.0 |
 | `javax.inject` | javax.inject | 1 | Apache-2.0 |
 | `net.zetetic` | sqlcipher-android | 4.20.0 | BSD-3-Clause |
+| `org.apache.commons` | commons-compress | 1.28.0 | Apache-2.0 |
+| `org.apache.commons` | commons-lang3 | 3.18.0 | Apache-2.0 |
 | `org.jetbrains` | annotations | 23.0.0 | Apache-2.0 |
 | `org.jetbrains.kotlin` | kotlin-stdlib | 2.4.21 | Apache-2.0 |
 | `org.jetbrains.kotlinx` | atomicfu, atomicfu-jvm | 0.28.0 | Apache-2.0 |
 | `org.jetbrains.kotlinx` | kotlinx-coroutines-android, kotlinx-coroutines-bom, kotlinx-coroutines-core, kotlinx-coroutines-core-jvm | 1.11.0 | Apache-2.0 |
 | `org.jetbrains.kotlinx` | kotlinx-serialization-bom, kotlinx-serialization-core, kotlinx-serialization-core-jvm | 1.12.0 | Apache-2.0 |
 | `org.jspecify` | jspecify | 1.0.0 | Apache-2.0 |
+| `org.tukaani` | xz | 1.12 | 0BSD |
+
+### XZ for Java (0BSD)
+
+```
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+```
 
 ### SQLCipher for Android (BSD-3-Clause)
 

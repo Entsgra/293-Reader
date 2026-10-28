@@ -19,4 +19,11 @@ internal val MIGRATION_1_2 = object : Migration(1, 2) {
 	}
 }
 
-internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2)
+/** v3: `metadata_version`, so books imported before their format had a reader get covers later. */
+internal val MIGRATION_2_3 = object : Migration(2, 3) {
+	override fun migrate(db: SupportSQLiteDatabase) {
+		db.execSQL("ALTER TABLE `books` ADD COLUMN `metadata_version` INTEGER NOT NULL DEFAULT 0")
+	}
+}
+
+internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)

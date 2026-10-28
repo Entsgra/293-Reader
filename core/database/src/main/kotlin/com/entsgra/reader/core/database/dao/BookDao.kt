@@ -6,6 +6,8 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.entsgra.reader.core.database.entity.BookEntity
+import com.entsgra.reader.core.model.ReadingDirection
+import com.entsgra.reader.core.model.SpreadMode
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -58,6 +60,35 @@ interface BookDao {
 
 	@Query("UPDATE books SET folder_id = :folderId WHERE id = :id")
 	suspend fun move(id: Long, folderId: Long?)
+
+	/** Books whose metadata predates [version], among [formats] (format names). */
+	@Query("SELECT * FROM books WHERE metadata_version < :version AND format IN (:formats)")
+	suspend fun withMetadataBefore(version: Int, formats: List<String>): List<BookEntity>
+
+	/** Writes what a format read from the file. Leaves the folder and dates alone. */
+	@Query(
+		"UPDATE books SET title = :title, author = :author, page_count = :pageCount, " +
+			"cover_file_name = :coverFileName, reading_direction = :direction, " +
+			"metadata_version = :version WHERE id = :id",
+	)
+	suspend fun applyMetadata(
+		id: Long,
+		title: String,
+		author: String?,
+		pageCount: Int?,
+		coverFileName: String?,
+		direction: ReadingDirection,
+		version: Int,
+	)
+
+	@Query("UPDATE books SET metadata_version = :version WHERE id = :id")
+	suspend fun setMetadataVersion(id: Long, version: Int)
+
+	@Query("UPDATE books SET reading_direction = :direction WHERE id = :id")
+	suspend fun setReadingDirection(id: Long, direction: ReadingDirection)
+
+	@Query("UPDATE books SET spread_mode = :mode WHERE id = :id")
+	suspend fun setSpreadMode(id: Long, mode: SpreadMode)
 
 	@Query("UPDATE books SET last_opened_at = :at WHERE id = :id")
 	suspend fun markOpened(id: Long, at: Long)

@@ -73,7 +73,10 @@
 	<string name="book_pages">Pages</string>
 	<string name="book_format">Format</string>
 	<string name="book_read">Read</string>
-	<string name="book_read_later">Opening books comes in the next build.</string>
+	<string name="book_continue">Continue</string>
+	<string name="book_read_later">EPUB and TXT reading comes in the next build.</string>
+	<string name="book_progress">Progress</string>
+	<string name="book_percent">%d%%</string>
 	<string name="book_title">Title</string>
 	<string name="book_title_blank">Enter a title.</string>
 	<string name="book_author">Author</string>

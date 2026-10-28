@@ -18,7 +18,12 @@ interface BookFormat {
 
 /** Picks the [BookFormat] for a file. Built by DI from every registered format. */
 class BookFormatRegistry(private val formats: Set<BookFormat>) {
+	/** Formats that have a reader. */
+	val ids: Set<BookFormatId> = formats.mapTo(mutableSetOf()) { it.id }
+
 	fun forId(id: BookFormatId): BookFormat? = formats.firstOrNull { it.id == id }
+
+	fun canRead(id: BookFormatId): Boolean = id in ids
 
 	fun detect(header: ByteArray, fileName: String): BookFormat? =
 		formats.firstOrNull { it.canOpen(header, fileName) }

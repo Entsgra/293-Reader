@@ -24,6 +24,8 @@ compose-bom = "2026.09.00"
 
 sqlcipher = "4.20.0"
 tink = "1.24.0"
+commons-compress = "1.28.0"
+xz = "1.12"
 
 junit = "4.13.2"
 truth = "1.4.5"
@@ -66,6 +68,8 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 
 sqlcipher-android = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher" }
 tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons-compress" }
+xz = { module = "org.tukaani:xz", version.ref = "xz" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }

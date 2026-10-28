@@ -31,6 +31,7 @@ import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.Folder
 import java.time.Instant
+import kotlin.math.roundToInt
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -40,6 +41,7 @@ private enum class BookDialog { EDIT, MOVE, DELETE }
 @Composable
 internal fun BookScreen(
 	onBack: () -> Unit,
+	onRead: (bookId: Long) -> Unit,
 	viewModel: BookViewModel = hiltViewModel(),
 ) {
 	val state by viewModel.state.collectAsStateWithLifecycle()
@@ -66,17 +68,17 @@ internal fun BookScreen(
 				plateValue = book.format.name,
 			)
 			book.author?.let { BodyText(it) }
-			BodyText(stringResource(R.string.book_read_later))
+			if (!ready.readable) BodyText(stringResource(R.string.book_read_later))
 		}
 		PrimaryButton(
-			text = stringResource(R.string.book_read),
-			onClick = {},
-			enabled = false,
+			text = stringResource(if (ready.progress == null) R.string.book_read else R.string.book_continue),
+			onClick = { onRead(book.id) },
+			enabled = ready.readable,
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(top = ReaderSpacing.space3),
 		)
-		BookFacts(book, ready.folder, Modifier.padding(top = ReaderSpacing.space6))
+		BookFacts(book, ready.folder, ready.progress, Modifier.padding(top = ReaderSpacing.space6))
 		Column(
 			Modifier.padding(top = ReaderSpacing.space6),
 			verticalArrangement = Arrangement.spacedBy(ReaderSpacing.space3),
@@ -114,9 +116,15 @@ internal fun BookScreen(
 }
 
 @Composable
-private fun BookFacts(book: Book, folder: Folder?, modifier: Modifier = Modifier) {
+private fun BookFacts(book: Book, folder: Folder?, progress: Float?, modifier: Modifier = Modifier) {
 	val context = LocalContext.current
 	Column(modifier) {
+		if (progress != null) {
+			ReaderRow(
+				title = stringResource(R.string.book_progress),
+				trailing = stringResource(R.string.book_percent, (progress * 100).roundToInt()),
+			)
+		}
 		ReaderRow(
 			title = stringResource(R.string.book_folder),
 			trailing = folder?.name ?: stringResource(R.string.library_title),

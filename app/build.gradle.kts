@@ -56,6 +56,10 @@ dependencies {
 	implementation(project(":core:designsystem"))
 	implementation(project(":core:data"))
 	implementation(project(":feature:library"))
+	implementation(project(":feature:reader"))
+	// Format readers register themselves into the BookFormatRegistry through Hilt.
+	implementation(project(":reader:pdf"))
+	implementation(project(":reader:comic"))
 	implementation(project(":feature:physical"))
 	implementation(project(":feature:log"))
 	implementation(project(":feature:settings"))

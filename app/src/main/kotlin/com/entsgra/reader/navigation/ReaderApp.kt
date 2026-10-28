@@ -26,6 +26,9 @@ import com.entsgra.reader.core.designsystem.theme.ReaderTheme
 import com.entsgra.reader.feature.library.LibraryGraph
 import com.entsgra.reader.feature.library.libraryGraph
 import com.entsgra.reader.feature.log.logScreen
+import com.entsgra.reader.feature.reader.ReaderRoute
+import com.entsgra.reader.feature.reader.navigateToReader
+import com.entsgra.reader.feature.reader.readerScreen
 import com.entsgra.reader.feature.physical.shelfScreen
 import com.entsgra.reader.feature.settings.settingsScreen
 
@@ -35,6 +38,8 @@ fun ReaderApp() {
 	val navController = rememberNavController()
 	val backStack by navController.currentBackStackEntryAsState()
 	val destination = backStack?.destination
+	// The reader runs edge to edge under the system bars, with no bottom bar.
+	val reading = destination?.hasRoute<ReaderRoute>() == true
 
 	Column(
 		Modifier
@@ -46,8 +51,14 @@ fun ReaderApp() {
 			startDestination = LibraryGraph,
 			modifier = Modifier
 				.weight(1f)
-				.windowInsetsPadding(
-					WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+				.then(
+					if (reading) {
+						Modifier
+					} else {
+						Modifier.windowInsetsPadding(
+							WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+						)
+					},
 				),
 			// Nothing slides sideways: destinations swap in place.
 			enterTransition = { EnterTransition.None },
@@ -55,12 +66,13 @@ fun ReaderApp() {
 			popEnterTransition = { EnterTransition.None },
 			popExitTransition = { ExitTransition.None },
 		) {
-			libraryGraph(navController)
+			libraryGraph(navController, onRead = navController::navigateToReader)
+			readerScreen(onBack = { navController.popBackStack() })
 			shelfScreen()
 			logScreen()
 			settingsScreen()
 		}
-		ReaderBottomBar {
+		if (!reading) ReaderBottomBar {
 			TopLevelDestination.entries.forEach { item ->
 				val selected = destination?.hierarchy?.any { it.hasRoute(item.routeClass) } == true
 				ReaderBottomBarItem(

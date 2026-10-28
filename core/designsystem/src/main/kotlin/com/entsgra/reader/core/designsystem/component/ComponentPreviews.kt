@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,7 @@ private fun Gallery(theme: AppTheme) {
 	ReaderTheme(theme) {
 		var on by remember { mutableStateOf(true) }
 		var chip by remember { mutableStateOf(theme) }
+		var page by remember { mutableIntStateOf(46) }
 		Column(
 			modifier = Modifier
 				.background(ReaderTheme.colors.fog)
@@ -41,6 +43,13 @@ private fun Gallery(theme: AppTheme) {
 				selected = chip,
 				onSelect = { chip = it },
 				label = { it.name },
+			)
+			ReaderScrubber(
+				value = page,
+				count = 312,
+				onValueChange = { page = it },
+				onValueChangeFinished = {},
+				stateDescription = "Page ${page + 1} of 312",
 			)
 			ReaderTextField(value = "", onValueChange = {}, label = "Search", placeholder = "Title or author", leadingIcon = ReaderIcons.Search)
 			ReaderTextField(value = "Comics", onValueChange = {}, label = "Name", error = "A folder with that name is already here.")
@@ -69,18 +78,18 @@ private fun Gallery(theme: AppTheme) {
 	}
 }
 
-@Preview(name = "Light", widthDp = 360, heightDp = 1900)
+@Preview(name = "Light", widthDp = 360, heightDp = 1960)
 @Composable
 private fun GalleryLight() = Gallery(AppTheme.LIGHT)
 
-@Preview(name = "Dark", widthDp = 360, heightDp = 1900)
+@Preview(name = "Dark", widthDp = 360, heightDp = 1960)
 @Composable
 private fun GalleryDark() = Gallery(AppTheme.DARK)
 
-@Preview(name = "Light yellow", widthDp = 360, heightDp = 1900)
+@Preview(name = "Light yellow", widthDp = 360, heightDp = 1960)
 @Composable
 private fun GalleryYellow() = Gallery(AppTheme.YELLOW)
 
-@Preview(name = "Light pink", widthDp = 360, heightDp = 1900)
+@Preview(name = "Light pink", widthDp = 360, heightDp = 1960)
 @Composable
 private fun GalleryPink() = Gallery(AppTheme.PINK)

@@ -1,6 +1,7 @@
 package com.entsgra.reader.core.data.library
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -9,7 +10,14 @@ import com.entsgra.reader.core.model.BookFormatId
 import com.entsgra.reader.core.security.DatabaseKey
 import com.entsgra.reader.core.security.FileCipher
 import com.entsgra.reader.core.security.KeystoreCryptoPrimitives
+import com.entsgra.reader.core.model.ReadingDirection
+import com.entsgra.reader.reader.api.BookDocument
+import com.entsgra.reader.reader.api.BookFormat
 import com.entsgra.reader.reader.api.BookFormatRegistry
+import com.entsgra.reader.reader.api.BookMetadata
+import com.entsgra.reader.reader.api.BookSource
+import com.entsgra.reader.reader.api.PageSize
+import com.entsgra.reader.reader.api.PagedDocument
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import java.util.zip.CRC32
@@ -177,6 +185,67 @@ class BookImporterTest {
 			androidx.paging.PagingSource.LoadParams.Refresh(null, 10, false),
 		) as androidx.paging.PagingSource.LoadResult.Page
 		assertThat(page.data.map { it.title }).containsExactly("Über die Brücke")
+	}
+
+	@Test
+	fun importReadsMetadataAndCoverFromTheFormat() = runBlocking<Unit> {
+		val format = FakePdfFormat()
+		val reading = BookImporter(context, database, files, cipher, covers, BookFormatRegistry(setOf(format)), scope)
+		reading.import(listOf(file("austerlitz.pdf", pdf)), null)
+		withTimeout(30_000) { reading.state.first { it is ImportState.Finished } }
+
+		val book = database.get().bookDao().findByHash(sha256(pdf))!!
+		assertThat(book.title).isEqualTo("Austerlitz")
+		assertThat(book.author).isEqualTo("W. G. Sebald")
+		assertThat(book.pageCount).isEqualTo(7)
+		assertThat(book.readingDirection).isEqualTo(ReadingDirection.RTL)
+		assertThat(book.metadataVersion).isEqualTo(BookImporter.METADATA_VERSION)
+		assertThat(covers.load(book.coverFileName!!, minWidth = 10)).isNotNull()
+	}
+
+	@Test
+	fun backfillAddsCoversButKeepsEditedDetails() = runBlocking<Unit> {
+		runImport(listOf(file("vertigo.pdf", pdf)))
+		val books = database.get().bookDao()
+		val id = books.findByHash(sha256(pdf))!!.id
+		books.updateDetails(id, "My Vertigo", null)
+
+		val format = FakePdfFormat()
+		val reading = BookImporter(context, database, files, cipher, covers, BookFormatRegistry(setOf(format)), scope)
+		reading.backfillMetadata()
+		reading.backfillMetadata()
+
+		val book = books.get(id)!!
+		assertThat(book.title).isEqualTo("My Vertigo")
+		assertThat(book.author).isEqualTo("W. G. Sebald")
+		assertThat(book.pageCount).isEqualTo(7)
+		assertThat(book.coverFileName).isNotNull()
+		// The second pass found nothing left to do.
+		assertThat(format.opened).isEqualTo(1)
+	}
+
+	/** Stands in for the real PDF reader, which lives in another module. */
+	private class FakePdfFormat : BookFormat {
+		var opened = 0
+
+		override val id = BookFormatId.PDF
+
+		override fun canOpen(header: ByteArray, fileName: String) = true
+
+		override suspend fun open(source: BookSource): BookDocument {
+			opened++
+			// Reading the plaintext proves the source decrypts.
+			check(source.openStream().use { it.readBytes() }.isNotEmpty())
+			return object : PagedDocument {
+				override val metadata = BookMetadata("Austerlitz", "W. G. Sebald", ReadingDirection.RTL)
+				override val pageCount = 7
+				override suspend fun pageSize(index: Int) = PageSize(2, 3)
+				override suspend fun render(index: Int, target: Bitmap) = Unit
+				override suspend fun cover(maxWidth: Int, maxHeight: Int): Bitmap =
+					Bitmap.createBitmap(36, 54, Bitmap.Config.ARGB_8888)
+				override fun close() = Unit
+			}
+		}
 	}
 
 	private fun sha256(bytes: ByteArray) = java.security.MessageDigest.getInstance("SHA-256")

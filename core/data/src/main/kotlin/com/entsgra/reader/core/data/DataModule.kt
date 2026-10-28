@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.entsgra.reader.reader.api.BitmapPool
 import com.entsgra.reader.reader.api.BookFormat
 import com.entsgra.reader.reader.api.BookFormatRegistry
 import dagger.Module
@@ -32,6 +33,11 @@ internal object DataModule {
 	@Singleton
 	fun provideFormatRegistry(formats: Set<@JvmSuppressWildcards BookFormat>) = BookFormatRegistry(formats)
 
+	/** Idle page bitmaps kept for reuse: about four screen-sized pages. */
+	@Provides
+	@Singleton
+	fun provideBitmapPool() = BitmapPool(maxBytes = 48L * 1024 * 1024)
+
 	@Provides
 	@Singleton
 	fun providePreferences(@ApplicationContext context: Context): DataStore<Preferences> =
@@ -41,7 +47,7 @@ internal object DataModule {
 		) { context.preferencesDataStoreFile("settings") }
 }
 
-/** Format modules add themselves with `@IntoSet`; until the first lands the set is empty. */
+/** Format modules (`reader:*`) add themselves with `@IntoSet`; the app module pulls them in. */
 @Module
 @InstallIn(SingletonComponent::class)
 internal interface FormatBindings {

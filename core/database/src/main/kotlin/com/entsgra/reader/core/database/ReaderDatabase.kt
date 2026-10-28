@@ -28,7 +28,7 @@ import com.entsgra.reader.core.database.entity.ReadingSessionEntity
 		BookmarkEntity::class,
 		ReadingPositionEntity::class,
 	],
-	version = 2,
+	version = 3,
 	exportSchema = true,
 )
 @TypeConverters(Converters::class)

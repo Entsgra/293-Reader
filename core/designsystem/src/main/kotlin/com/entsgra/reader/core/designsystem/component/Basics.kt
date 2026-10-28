@@ -49,18 +49,12 @@ fun ScreenTitle(
 ) {
 	Column(modifier) {
 		if (onBack != null) {
-			Box(
-				modifier = Modifier
-					.offset(x = -(ReaderSize.targetMin - ReaderSize.icon) / 2)
-					.size(ReaderSize.targetMin)
-					.clickable(role = Role.Button, onClickLabel = backLabel, onClick = onBack)
-					.semantics { contentDescription = backLabel.orEmpty() },
-				contentAlignment = Alignment.Center,
-			) {
-				CompositionLocalProvider(LocalContentColor provides ReaderTheme.colors.ink) {
-					ReaderIcon(ReaderIcons.Back)
-				}
-			}
+			ReaderIconButton(
+				icon = ReaderIcons.Back,
+				label = backLabel.orEmpty(),
+				onClick = onBack,
+				modifier = Modifier.offset(x = -(ReaderSize.targetMin - ReaderSize.icon) / 2),
+			)
 		}
 		Text(
 			text = text.uppercase(),
@@ -70,6 +64,30 @@ fun ScreenTitle(
 				.padding(top = if (onBack == null) ReaderSpacing.space12 else 0.dp, bottom = ReaderSpacing.space6)
 				.semantics { heading() },
 		)
+	}
+}
+
+/**
+ * An icon-only button, `target-min` square, for universal actions only (back, close). [label]
+ * is read by screen readers.
+ */
+@Composable
+fun ReaderIconButton(
+	icon: ImageVector,
+	label: String,
+	onClick: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	Box(
+		modifier = modifier
+			.size(ReaderSize.targetMin)
+			.clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+			.semantics { contentDescription = label },
+		contentAlignment = Alignment.Center,
+	) {
+		CompositionLocalProvider(LocalContentColor provides ReaderTheme.colors.ink) {
+			ReaderIcon(icon)
+		}
 	}
 }
 

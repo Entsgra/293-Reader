@@ -17,7 +17,8 @@ data class LibraryRoute(val folderId: Long? = null)
 @Serializable
 data class BookRoute(val bookId: Long)
 
-fun NavGraphBuilder.libraryGraph(navController: NavController) {
+/** [onRead] opens a book in the reader, which lives outside this graph. */
+fun NavGraphBuilder.libraryGraph(navController: NavController, onRead: (bookId: Long) -> Unit) {
 	navigation<LibraryGraph>(startDestination = LibraryRoute()) {
 		composable<LibraryRoute> {
 			LibraryScreen(
@@ -27,7 +28,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController) {
 			)
 		}
 		composable<BookRoute> {
-			BookScreen(onBack = { navController.popBackStack() })
+			BookScreen(onBack = { navController.popBackStack() }, onRead = onRead)
 		}
 	}
 }

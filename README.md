@@ -12,7 +12,7 @@ Distributed through GitHub releases only, self-signed.
 |---|---|---|
 | 1 | Scaffold, theme and components, navigation shell, encrypted database, data model | Done |
 | 2 | Import, library UI, folders | Done |
-| 3 | PDF and comic readers (CBZ, CB7) | |
+| 3 | PDF and comic readers (CBZ, CB7) | Done |
 | 4 | EPUB and TXT readers | |
 | 5 | Physical book tracking, reading log UI | |
 | 6 | Locked folders, biometric/PIN, passphrase | |
@@ -38,8 +38,33 @@ the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI licen
   folder for its actions; tap a cover for the book screen.
 - **Search:** title and author, every word as a prefix, ignoring case and accents ("brucke"
   finds "Brücke"). Books in locked folders never appear in results.
-- **Covers:** stored encrypted and decoded at grid size. Formats supply them from Phase 3 on;
-  until then a cover shows the title and format.
+- **Covers:** stored encrypted and decoded at grid size. PDF and comic covers come from the
+  first page; books in formats without a reader yet show the title and format. When a format
+  gains a reader, books imported before it get their covers and page counts at the next start,
+  keeping any title or author edited by hand.
+
+## Reading (PDF, CBZ, CB7)
+
+- **Page mode:** swipe, or tap the outer thirds, to turn; tap the middle for the controls. Taps
+  jump straight to the page. Controls: a page scrubber, direction and pages on screen. With the
+  controls hidden the system bars are hidden too.
+- **Right to left:** per book. A comic whose ComicInfo.xml marks it as right-to-left manga opens
+  that way; the page order, tap sides, swipe and scrubber all follow.
+- **Two-page spreads:** One, Two, or Auto (two in landscape). The cover stands alone, then
+  facing pairs, as in print.
+- **Zoom:** pinch or double-tap, up to 5x. The page re-renders sharp once the fingers lift.
+- **Position:** saved half a second after each turn and when the reader closes, reopened on
+  the same page. Each sitting of 30 seconds or more goes to the reading log.
+- **PDF:** the platform PdfRenderer, fed from a memfd (anonymous memory): the decrypted PDF is
+  never written to disk, and costs RAM equal to its size while open. Password-protected PDFs
+  are refused with a note to remove the password.
+- **Comics:** pages are the archive's images in natural order ("page2" before "page10");
+  macOS resource forks and hidden files are skipped. Entries are read in place through the
+  decrypting channel. Solid 7z decodes front to back, so paging forward is cheap and recently
+  read pages are cached for paging back.
+- **Memory:** page bitmaps come from a shared pool (48 MB of idle bitmaps at most, freed when
+  the app is backgrounded); rendering runs off the main thread; the next and previous screen
+  render ahead.
 
 ## Build
 
@@ -72,8 +97,11 @@ core/designsystem   the only home for design tokens: colours, Jost type scale, s
 core/security       Keystore-backed Tink keys, file encryption, database key
 core/database       Room on SQLCipher: entities, DAOs, schema exports in schemas/
 core/data           repositories and settings
-reader/api          format-neutral reader contract
-feature/*           library, physical (shelf), log, settings
+reader/api          format-neutral reader contract, bitmap pool
+reader/archive      zip and 7z over a decrypting channel
+reader/pdf          PDF through PdfRenderer
+reader/comic        CBZ and CB7
+feature/*           library, reader, physical (shelf), log, settings
 ```
 
 ## Design
