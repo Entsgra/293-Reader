@@ -14,5 +14,8 @@ class BookOpenException(val reason: Reason, cause: Throwable? = null) : Exceptio
 
 		/** Opens, but has nothing to show (a comic archive with no images). */
 		EMPTY,
+
+		/** Bigger than the reader can hold in memory, such as a huge plain-text file. */
+		TOO_LARGE,
 	}
 }

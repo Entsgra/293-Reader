@@ -60,6 +60,8 @@ dependencies {
 	// Format readers register themselves into the BookFormatRegistry through Hilt.
 	implementation(project(":reader:pdf"))
 	implementation(project(":reader:comic"))
+	implementation(project(":reader:epub"))
+	implementation(project(":reader:txt"))
 	implementation(project(":feature:physical"))
 	implementation(project(":feature:log"))
 	implementation(project(":feature:settings"))

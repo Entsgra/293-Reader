@@ -76,6 +76,7 @@ private fun ReaderError(reason: BookOpenException.Reason, onBack: () -> Unit) {
 		BookOpenException.Reason.DAMAGED -> R.string.reader_error_damaged
 		BookOpenException.Reason.EMPTY -> R.string.reader_error_empty
 		BookOpenException.Reason.UNSUPPORTED -> R.string.reader_error_unsupported
+		BookOpenException.Reason.TOO_LARGE -> R.string.reader_error_too_large
 	}
 	Column(
 		Modifier

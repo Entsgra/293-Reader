@@ -14,6 +14,7 @@
 	<string name="reader_error_title">Can\'t open</string>
 	<string name="reader_error_protected">This file is password protected. Remove the password in another app, then import it again.</string>
 	<string name="reader_error_damaged">This file is damaged or incomplete. Import a fresh copy.</string>
-	<string name="reader_error_empty">This comic has no page images. Check the archive and import it again.</string>
+	<string name="reader_error_empty">This book has no pages or text to show. Check the file and import it again.</string>
 	<string name="reader_error_unsupported">This format opens in a later update.</string>
+	<string name="reader_error_too_large">This text file is too large to open. Split it into smaller files and import those.</string>
 </resources>
