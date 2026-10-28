@@ -2,8 +2,10 @@ package com.entsgra.reader.core.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
@@ -18,5 +20,8 @@ internal object DataModule {
 	@Provides
 	@Singleton
 	fun providePreferences(@ApplicationContext context: Context): DataStore<Preferences> =
-		PreferenceDataStoreFactory.create { context.preferencesDataStoreFile("settings") }
+		PreferenceDataStoreFactory.create(
+			// Only display preferences live here; resetting a corrupt file beats failing launch.
+			corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+		) { context.preferencesDataStoreFile("settings") }
 }

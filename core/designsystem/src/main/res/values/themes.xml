@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!--
+		Manifest theme. The system draws its starting window from this before any app code runs,
+		so it can only be Light. The per-theme styles below are handed to the system as the next
+		launch's splash theme (API 33+), which is what keeps cold start on the chosen theme.
+	-->
 	<style name="Theme.Reader" parent="android:Theme.Material.Light.NoActionBar">
 		<item name="android:windowBackground">@color/reader_fog_light</item>
 		<item name="android:statusBarColor">@android:color/transparent</item>
 		<item name="android:navigationBarColor">@android:color/transparent</item>
+	</style>
+
+	<style name="Theme.Reader.Light" />
+
+	<style name="Theme.Reader.Dark" parent="android:Theme.Material.NoActionBar">
+		<item name="android:windowBackground">@color/reader_fog_dark</item>
+		<item name="android:statusBarColor">@android:color/transparent</item>
+		<item name="android:navigationBarColor">@android:color/transparent</item>
+	</style>
+
+	<style name="Theme.Reader.Yellow">
+		<item name="android:windowBackground">@color/reader_fog_yellow</item>
+	</style>
+
+	<style name="Theme.Reader.Pink">
+		<item name="android:windowBackground">@color/reader_fog_pink</item>
 	</style>
 </resources>

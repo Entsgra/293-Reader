@@ -15,6 +15,10 @@ class ColorTokensTest {
 		.map { File(it, "design/293-tokens.json") }
 		.first { it.exists() }
 
+	private val colorsXml = generateSequence(File("").absoluteFile) { it.parentFile }
+		.map { File(it, "core/designsystem/src/main/res/values/colors.xml") }
+		.first { it.exists() }
+
 	private val roles: Map<String, (ReaderColors) -> Color> = mapOf(
 		"fog" to { it.fog },
 		"fog-raised" to { it.fogRaised },
@@ -54,5 +58,18 @@ class ColorTokensTest {
 			}
 		}
 		assertWithMessage("token values checked").that(checked).isEqualTo(roles.size * themeIds.size)
+	}
+
+	@Test
+	fun windowFogInXmlMatchesTheSpec() {
+		val xml = colorsXml.readText()
+		themeIds.forEach { (id, theme) ->
+			val value = Regex("""<color name="reader_fog_$id">#([0-9A-Fa-f]{6})</color>""").find(xml)
+			assertWithMessage("reader_fog_$id in colors.xml").that(value).isNotNull()
+			val expected = 0xFF000000.toInt() or value!!.groupValues[1].toInt(16)
+			assertWithMessage("reader_fog_$id")
+				.that(Integer.toHexString(readerColors(theme).fog.toArgb()))
+				.isEqualTo(Integer.toHexString(expected))
+		}
 	}
 }
