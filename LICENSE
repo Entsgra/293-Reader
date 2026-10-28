@@ -1,0 +1,168 @@
+293 Free Use License
+Version 1.0
+
+Copyright (c) 2026 Entsgra
+Applies to: 293 Reader
+Source: https://github.com/Entsgra/293-Reader
+
+1. Definitions
+
+"Work" means everything distributed with this license, including source
+code, builds, art, audio, models, designs, documentation and other files,
+and any Modified Version of them.
+
+"Modified Version" means the Work with changes, additions or removals,
+distributed as a product in its own right.
+
+"Larger Work" means a separate product or service that includes the Work,
+or part of it, as a component.
+
+"Source" means the form of the Work preferred for making changes, such as
+source code and build files, or layered and project files for art, audio,
+models and designs, but not signing keys or passwords.
+
+"Licensor" means the copyright holder or holders of the Work.
+
+"Maintainer" means whoever maintains the original project of the Work,
+which is the Licensor unless the Licensor names someone else.
+
+"Charge" means requiring payment of any kind, including money,
+cryptocurrency, credits, subscriptions or anything else of value, in exchange
+for obtaining, downloading, installing, setting up, accessing, supporting,
+customizing or unlocking any part or feature of the Work. Charge also
+includes earning revenue from the Work by other means, including
+advertising, sponsorships, affiliate or referral fees, or selling or
+licensing data collected through the Work.
+
+"Donation" means a payment that is voluntary, is not required to obtain, use
+or unlock any part of the Work, and gives the donor nothing in the Work,
+including earlier access, that non-donors do not also get at the same time.
+
+2. Permission
+
+Anyone who obtains a copy of the Work may use, copy, modify, merge, publish,
+distribute and include it in other works, for any purpose including
+commercial purposes, with or without credit, subject to the conditions below.
+
+3. No selling
+
+You may not Charge for:
+  (a) the Work or any standalone copy of it;
+  (b) a Modified Version;
+  (c) any product or service where the Work is the main thing being offered;
+      or
+  (d) any add-on, plugin, extension or companion product whose main purpose
+      is to work with, extend or unlock the Work.
+
+This section does not restrict earning revenue from videos, streams,
+reviews, articles or other commentary in which the Work is the subject being
+shown, played, reviewed or discussed, as long as the Work itself is not made
+available to obtain through them.
+
+This section does not apply to physical goods.
+
+4. Larger Works
+
+Notwithstanding Section 3, you may include the Work in a Larger Work that you
+Charge for, provided that:
+  (a) the Larger Work would still be reasonably worth paying for with the
+      Work, and every other work licensed under any version of this license,
+      removed;
+  (b) the Work is not presented as a main reason to buy, including in
+      marketing, store listings or screenshots; and
+  (c) users of the Larger Work are told where to get the Work free.
+The parts of the Larger Work that come from the Work remain under this
+license.
+
+Using the Work, or any part of it, as music, sound, footage or artwork in a
+video, stream, broadcast or recording that is not about the Work does not
+qualify under this section. If that content earns revenue of any kind, it is
+Charging.
+
+A Larger Work may not Charge separately for installing, setting up, accessing,
+supporting, customizing or unlocking the Work itself, or any part or feature
+of it.
+
+5. Donations
+
+You may accept Donations. Accepting Donations is not Charging.
+
+6. Licensor commitment
+
+The Licensor agrees to follow Sections 3 and 4 for the Work as if the
+Licensor were a licensee. This commitment cannot be revoked for any version
+of the Work released under this license, and anyone may rely on it.
+
+7. AI training
+
+Using the Work to train, fine-tune or evaluate machine learning models is
+permitted only as stated in an AI notice published by the Maintainer with
+the Work. The Maintainer may change that notice at any time for future use.
+If no notice is published, this use is not permitted.
+
+8. The license stays with the Work
+
+Every copy and every Modified Version of the Work must be distributed under
+this license, with this license text included. You may not distribute it
+under a different license, or add terms that take away any permission
+granted in Section 2. The copyright line may be removed, but the "Applies
+to" and "Source" lines must stay. Anything you make yourself that is not
+derived from the Work may use any license you choose.
+
+9. Source
+
+If you distribute a Modified Version, you must make its complete Source
+publicly available, free of Charge, for as long as you distribute it. If you
+distribute a Larger Work, you must do the same for the Source of the Work as
+included in it, with any changes you made. If you distribute the Work
+unchanged, a link to the Maintainer's published Source, or including the
+Source, is enough.
+
+10. Names
+
+This license grants no rights to the names, logos or other branding the
+Maintainer uses for the Work, or to the name "293". A Modified Version must
+use a different name and must not suggest it is the original or is endorsed
+by the Licensor or the Maintainer. You may not claim to be the original
+author of the Work.
+
+11. Third-party components
+
+Parts of the Work that come from third parties remain under their own
+licenses, listed in the Work's third-party notices. This license applies
+only to the rest.
+
+12. Contributions
+
+Anything you submit for inclusion in the Work is licensed under this
+license, and you grant the Maintainer permission to relicense your
+contribution under any later version of this license.
+
+13. Later versions
+
+The Maintainer may publish later versions of this license. You may use the
+Work under this version or under any later version published by the
+Maintainer.
+
+14. Termination
+
+If you break these terms, your permissions under this license end
+automatically. If you fix the violation within 30 days of the Licensor or
+the Maintainer notifying you by any reasonable means, your permissions are
+restored, once. A second violation ends them permanently, under this and
+every later version of this license. Termination does not affect people who
+received the Work from you; each recipient gets this license directly from
+the Licensor.
+
+15. Severability
+
+If any part of this license is found unenforceable, the rest stays in
+effect, and that part is enforced as closely to its intent as the law
+allows.
+
+16. No warranty
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE WORK IS PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. THE LICENSOR, THE
+MAINTAINER AND ANY CONTRIBUTORS ARE NOT LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE WORK OR ITS USE.
