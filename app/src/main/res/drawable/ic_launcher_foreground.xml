@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A terrace on its ledge, with the sweep: the 293 key card as a mark. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:width="108dp"
+	android:height="108dp"
+	android:viewportWidth="108"
+	android:viewportHeight="108">
+	<path
+		android:fillColor="@color/reader_ledge_light"
+		android:pathData="M32,40 H76 V56 A24,24 0 0 1 52,80 H32 Z" />
+	<path
+		android:fillColor="@color/reader_action_light"
+		android:pathData="M32,32 H76 V48 A24,24 0 0 1 52,72 H32 Z" />
+</vector>

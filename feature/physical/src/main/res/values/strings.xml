@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="physical_title">Shelf</string>
+	<string name="physical_empty">No paper books yet. Adding them comes in a later build.</string>
+	<string name="physical_add">Add book</string>
+</resources>

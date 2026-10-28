@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">293 Reader</string>
+	<string name="nav_library">Library</string>
+	<string name="nav_shelf">Shelf</string>
+	<string name="nav_log">Log</string>
+	<string name="nav_settings">Settings</string>
+</resources>

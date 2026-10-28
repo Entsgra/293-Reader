@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	XML-side colours for the window background and launcher icon, before Compose draws.
+	They mirror the Light theme in 293-tokens.json; keep in sync with ColorTokens.kt.
+-->
+<resources>
+	<color name="reader_fog_light">#D9D9D4</color>
+	<color name="reader_ledge_light">#BCBCB6</color>
+	<color name="reader_action_light">#18191A</color>
+</resources>

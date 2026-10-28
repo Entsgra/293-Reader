@@ -1,0 +1,16 @@
+// Prints every artifact shipped in the release APK. Used to keep THIRD_PARTY_NOTICES.md current:
+//   ./gradlew -q -I scripts/runtime-dependencies.init.gradle :app:printRuntimeDependencies --no-configuration-cache
+
+allprojects {
+	if (path == ":app") {
+		tasks.register("printRuntimeDependencies") {
+			def cfg = configurations.named("releaseRuntimeClasspath")
+			doLast {
+				cfg.get().incoming.resolutionResult.allComponents.each { c ->
+					def id = c.moduleVersion
+					if (c.id instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier) println "DEP ${id.group}:${id.name}:${id.version}"
+				}
+			}
+		}
+	}
+}
