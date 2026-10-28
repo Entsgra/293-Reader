@@ -14,7 +14,7 @@ Distributed through GitHub releases only, self-signed.
 | 2 | Import, library UI, folders | Done |
 | 3 | PDF and comic readers (CBZ, CB7) | Done |
 | 4 | EPUB and TXT readers | Done |
-| 5 | Physical book tracking, reading log UI | |
+| 5 | Physical book tracking, reading log UI | Done |
 | 6 | Locked folders, biometric/PIN, passphrase | |
 | 7 | Performance pass, baseline profiles, release config | |
 
@@ -87,6 +87,23 @@ the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI licen
 - **TXT:** UTF-8, UTF-16 with a byte order mark, else Windows-1252. Paragraphs come from blank
   lines, hard-wrapped lines are joined, and lines such as "Chapter 12" or "PART TWO" start
   chapters. Files over 16 MB are refused.
+
+## Shelf (paper books)
+
+- **Books:** title, author and page count (both optional), added by hand. The book being read
+  sits on the key card with its page; the rest are grouped To read, Reading, Finished and Set
+  aside, most recently touched first. Status can be changed from the book's screen.
+- **Logging:** "Log reading" takes the pages read (from the bookmark on) and the minutes, as a
+  sitting that ended now. The bookmark moves on; a sitting starts a book waiting to be read,
+  and reaching the last page finishes it. Long press a sitting to delete it.
+- Stored in the encrypted database with the ebooks. Deleting a book deletes its sittings.
+
+## Log
+
+- One list for ebooks and paper books: sittings the reader records (30 seconds or more) and
+  sittings logged on the shelf, newest first, by day. A row opens its book.
+- The key card shows hours read this week (from Monday) and today.
+- Sittings with books in locked folders never appear.
 
 ## Build
 
