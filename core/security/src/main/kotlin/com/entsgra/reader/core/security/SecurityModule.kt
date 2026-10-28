@@ -10,4 +10,10 @@ import dagger.hilt.components.SingletonComponent
 internal abstract class SecurityModule {
 	@Binds
 	abstract fun bindCryptoPrimitives(impl: KeystoreCryptoPrimitives): CryptoPrimitives
+
+	@Binds
+	abstract fun bindDeviceKeys(impl: KeystoreDeviceKeys): DeviceKeys
+
+	@Binds
+	abstract fun bindBiometricKeys(impl: KeystoreBiometricKeys): BiometricKeys
 }

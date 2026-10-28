@@ -32,7 +32,7 @@ class FileCipherTest {
 			KeysetHandle.generateNew(KeyTemplates.get("AES256_GCM_HKDF_1MB"))
 				.getPrimitive(RegistryConfiguration.get(), StreamingAead::class.java)
 	}
-	private val cipher = FileCipher(crypto)
+	private val cipher = FileCipher(crypto, Keyring())
 
 	// Spans several 1 MiB segments so seeking crosses segment boundaries.
 	private val plain = Random(293).nextBytes(3 * 1024 * 1024 + 517)
@@ -74,8 +74,9 @@ class FileCipherTest {
 	@Test
 	fun databaseKeyIsStableAndWrapped() {
 		val keyFile = File(tmp.root, "db.key")
-		val first = DatabaseKey(keyFile, crypto).passphrase()
-		val second = DatabaseKey(keyFile, crypto).passphrase()
+		val appLock = AppLockStore(File(tmp.root, "app.lock"))
+		val first = DatabaseKey(keyFile, crypto, appLock).passphrase()
+		val second = DatabaseKey(keyFile, crypto, appLock).passphrase()
 
 		assertThat(first).hasLength(32)
 		assertThat(second).isEqualTo(first)
@@ -83,5 +84,42 @@ class FileCipherTest {
 		assertThrows(GeneralSecurityException::class.java) {
 			crypto.aead.decrypt(keyFile.readBytes(), "wrong".toByteArray())
 		}
+	}
+
+	@Test
+	fun closedAppLockHoldsBackTheDatabaseKey() {
+		val keyFile = File(tmp.root, "db.key")
+		val appLock = AppLockStore(File(tmp.root, "app.lock"))
+		val key = DatabaseKey(keyFile, crypto, appLock)
+		val passphrase = key.passphrase()
+		appLock.write(AppLockRecord(pin = true, box = SecretBox(TEST_PARAMS, ByteArray(16), ByteArray(40)), biometric = null))
+		key.deleteStored()
+
+		assertThat(appLock.isEnabled).isTrue()
+		assertThrows(AppLockedException::class.java) { key.passphrase() }
+
+		val keyset = com.google.crypto.tink.TinkProtoKeysetFormat.serializeKeyset(
+			KeysetHandle.generateNew(KeyTemplates.get("AES256_GCM_HKDF_1MB")),
+			com.google.crypto.tink.InsecureSecretKeyAccess.get(),
+		)
+		appLock.open(AppSecrets.encode(passphrase, keyset))
+		assertThat(key.passphrase()).isEqualTo(passphrase)
+		assertThat(keyFile.exists()).isFalse()
+	}
+
+	@Test
+	fun folderFilesNeedTheFolderKey() {
+		val keyring = Keyring()
+		val cipher = FileCipher(crypto, keyring)
+		val file = File(tmp.root, "locked")
+		assertThrows(FolderLockedException::class.java) { cipher.encrypt(plain.inputStream(), file, keyFolderId = 4) }
+
+		keyring.put(4, FolderKeys.load(FolderKeys.generate()))
+		cipher.encrypt(plain.inputStream(), file, keyFolderId = 4)
+		assertThat(cipher.openInputStream(file, keyFolderId = 4).use { it.readBytes() }).isEqualTo(plain)
+		// The app key cannot read it, and once the folder locks neither can anything else.
+		assertThrows(Exception::class.java) { cipher.openInputStream(file).use { it.readBytes() } }
+		keyring.lock(4)
+		assertThrows(FolderLockedException::class.java) { cipher.openChannel(file, keyFolderId = 4) }
 	}
 }
