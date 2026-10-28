@@ -210,6 +210,36 @@
       "usage": "Nav labels and the month under a date. Uppercase. Never sentences."
      }
     ]
+   },
+   {
+    "name": "Reading",
+    "family": "sans",
+    "styles": [
+     {
+      "name": "reading-small",
+      "fontSize": "16px",
+      "lineHeight": "26px",
+      "fontWeight": 400,
+      "sample": "It was a bright cold day in April.",
+      "usage": "Book text in the EPUB and TXT reader at the size the reader picks. Book headings are 4/3 (h1, h2) or 9/8 (h3 to h6) of it at 600."
+     },
+     {
+      "name": "reading-medium",
+      "fontSize": "19px",
+      "lineHeight": "30px",
+      "fontWeight": 400,
+      "sample": "It was a bright cold day in April.",
+      "usage": "Book text in the EPUB and TXT reader at the size the reader picks. Book headings are 4/3 (h1, h2) or 9/8 (h3 to h6) of it at 600."
+     },
+     {
+      "name": "reading-large",
+      "fontSize": "23px",
+      "lineHeight": "36px",
+      "fontWeight": 400,
+      "sample": "It was a bright cold day in April.",
+      "usage": "Book text in the EPUB and TXT reader at the size the reader picks. Book headings are 4/3 (h1, h2) or 9/8 (h3 to h6) of it at 600."
+     }
+    ]
    }
   ]
  },

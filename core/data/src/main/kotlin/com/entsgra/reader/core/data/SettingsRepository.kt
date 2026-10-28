@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.entsgra.reader.core.model.AppTheme
 import com.entsgra.reader.core.model.LibrarySort
+import com.entsgra.reader.core.model.ReadingTextSize
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,8 +48,21 @@ class SettingsRepository @Inject constructor(
 		store.edit { it[LIBRARY_SORT] = sort.name }
 	}
 
+	val readingTextSize: Flow<ReadingTextSize> = store.data
+		.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+		.map { prefs ->
+			prefs[READING_TEXT_SIZE]?.let { name -> ReadingTextSize.entries.firstOrNull { it.name == name } }
+				?: ReadingTextSize.MEDIUM
+		}
+		.distinctUntilChanged()
+
+	suspend fun setReadingTextSize(size: ReadingTextSize) {
+		store.edit { it[READING_TEXT_SIZE] = size.name }
+	}
+
 	private companion object {
 		val THEME = stringPreferencesKey("theme")
 		val LIBRARY_SORT = stringPreferencesKey("library_sort")
+		val READING_TEXT_SIZE = stringPreferencesKey("reading_text_size")
 	}
 }

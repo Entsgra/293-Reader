@@ -17,4 +17,13 @@
 	<string name="reader_error_empty">This book has no pages or text to show. Check the file and import it again.</string>
 	<string name="reader_error_unsupported">This format opens in a later update.</string>
 	<string name="reader_error_too_large">This text file is too large to open. Split it into smaller files and import those.</string>
+	<string name="reader_progress">Progress</string>
+	<string name="reader_percent">%1$d%%</string>
+	<string name="reader_text_size">Text size</string>
+	<string name="reader_text_small">Small</string>
+	<string name="reader_text_medium">Medium</string>
+	<string name="reader_text_large">Large</string>
+	<string name="reader_contents">Contents</string>
+	<string name="reader_contents_here">Here</string>
+	<string name="reader_chapter_unreadable">This chapter is damaged and can\'t be shown. The rest of the book still reads.</string>
 </resources>

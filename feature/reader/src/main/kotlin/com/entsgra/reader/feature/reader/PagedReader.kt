@@ -147,7 +147,7 @@ internal fun PagedReader(
 }
 
 @Composable
-private fun TopControls(title: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
+internal fun TopControls(title: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
 	Column(
 		modifier
 			.fillMaxWidth()
@@ -255,7 +255,7 @@ private fun BottomControls(
 }
 
 /** Keeps taps on the controls from reaching the page underneath. */
-private fun Modifier.absorbTaps() = pointerInput(Unit) { detectTapGestures {} }
+internal fun Modifier.absorbTaps() = pointerInput(Unit) { detectTapGestures {} }
 
 /** Share of the width at each side that turns the page on tap. */
-private const val EDGE = 1f / 3f
+internal const val EDGE = 1f / 3f

@@ -65,6 +65,31 @@ class MigrationTest {
 		}
 	}
 
+	@Test
+	fun v3To4KeepsSessionsWithoutProgress() {
+		helper.createDatabase(NAME, 3).use { db ->
+			db.execSQL(
+				"INSERT INTO books (id, folder_id, title, author, format, file_name, file_size, content_hash, " +
+					"reading_direction, spread_mode, added_at, metadata_version) " +
+					"VALUES (1, NULL, 'Vertigo', NULL, 'PDF', 'f', 1, 'h', 'LTR', 'AUTO', 1, 1)",
+			)
+			db.execSQL(
+				"INSERT INTO reading_sessions (book_id, physical_book_id, started_at, ended_at, start_page, end_page) " +
+					"VALUES (1, NULL, 10, 20, 3, 9)",
+			)
+		}
+
+		val db = helper.runMigrationsAndValidate(NAME, 4, true, *ALL_MIGRATIONS)
+
+		db.query("SELECT start_page, end_page, start_progress, end_progress FROM reading_sessions").use {
+			assertThat(it.moveToFirst()).isTrue()
+			assertThat(it.getInt(0)).isEqualTo(3)
+			assertThat(it.getInt(1)).isEqualTo(9)
+			assertThat(it.isNull(2)).isTrue()
+			assertThat(it.isNull(3)).isTrue()
+		}
+	}
+
 	private companion object {
 		const val NAME = "migration-test.db"
 	}

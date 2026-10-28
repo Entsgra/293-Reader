@@ -38,6 +38,8 @@ internal fun ReaderScreen(
 	val state by viewModel.state.collectAsStateWithLifecycle()
 	val book by viewModel.book.collectAsStateWithLifecycle()
 	val page by viewModel.page.collectAsStateWithLifecycle()
+	val text by viewModel.text.collectAsStateWithLifecycle()
+	val textSize by viewModel.textSize.collectAsStateWithLifecycle()
 
 	LifecycleStartEffect(viewModel) {
 		viewModel.onStart()
@@ -62,6 +64,17 @@ internal fun ReaderScreen(
 					onPageChange = viewModel::onPageChange,
 					onReadingDirection = viewModel::setReadingDirection,
 					onSpreadMode = viewModel::setSpreadMode,
+					onBack = onBack,
+				)
+			}
+			is ReaderUiState.Flow -> book?.let {
+				FlowReader(
+					document = current.document,
+					book = it,
+					position = text,
+					textSize = textSize,
+					onPositionChange = viewModel::onTextPosition,
+					onTextSize = viewModel::setTextSize,
 					onBack = onBack,
 				)
 			}

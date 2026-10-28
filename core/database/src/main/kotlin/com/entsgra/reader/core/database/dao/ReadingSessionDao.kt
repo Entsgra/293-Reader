@@ -20,8 +20,11 @@ interface ReadingSessionDao {
 	@Insert
 	suspend fun insert(session: ReadingSessionEntity): Long
 
-	@Query("UPDATE reading_sessions SET ended_at = :endedAt, end_page = :endPage WHERE id = :id")
-	suspend fun end(id: Long, endedAt: Long, endPage: Int)
+	@Query(
+		"UPDATE reading_sessions SET ended_at = :endedAt, end_page = :endPage, end_progress = :endProgress " +
+			"WHERE id = :id",
+	)
+	suspend fun end(id: Long, endedAt: Long, endPage: Int, endProgress: Float? = null)
 
 	@Query("DELETE FROM reading_sessions WHERE id = :id")
 	suspend fun delete(id: Long)

@@ -9,6 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.entsgra.reader.core.designsystem.R
+import com.entsgra.reader.core.model.ReadingTextSize
 
 /** Jost (OFL 1.1), bundled as one variable font. The only typeface in the app. */
 val Jost = FontFamily(
@@ -63,3 +64,29 @@ val ReaderTypography = ReaderType(
 	label = jost(size = 14, line = 20, weight = 600, tracking = 0.1),
 	labelSmall = jost(size = 11, line = 14, weight = 600, tracking = 0.1),
 )
+
+/**
+ * Book text in the flow reader (EPUB, TXT): `body` scaled to the reader's chosen size, with
+ * longer leading for long reading. Headings inside a book keep the book's own case.
+ */
+@Immutable
+data class ReadingType(
+	val body: TextStyle,
+	/** `h1` and `h2`. */
+	val heading: TextStyle,
+	/** `h3` to `h6`. */
+	val subheading: TextStyle,
+)
+
+fun readingType(size: ReadingTextSize): ReadingType {
+	val (body, line) = when (size) {
+		ReadingTextSize.SMALL -> 16 to 26
+		ReadingTextSize.MEDIUM -> 19 to 30
+		ReadingTextSize.LARGE -> 23 to 36
+	}
+	return ReadingType(
+		body = jost(size = body, line = line, weight = 400),
+		heading = jost(size = body * 4 / 3, line = line * 4 / 3, weight = 600),
+		subheading = jost(size = body * 9 / 8, line = line, weight = 600),
+	)
+}

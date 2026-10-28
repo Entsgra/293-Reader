@@ -109,27 +109,37 @@ class ReaderRepository @Inject constructor(
 	}
 
 	/**
-	 * Starts a reading-log entry for [bookId] at 1-based [page]. One sitting is open at a time;
-	 * [finishSession] closes it. Both queue behind earlier writes, so they always pair up.
+	 * Starts a reading-log entry for [bookId] at 1-based [page] (0 for books without fixed pages)
+	 * and [progress] through the book. One sitting is open at a time; [finishSession] closes it.
+	 * Both queue behind earlier writes, so they always pair up.
 	 */
-	fun beginSession(bookId: Long, page: Int) {
+	fun beginSession(bookId: Long, page: Int, progress: Float) {
 		val startedAt = System.currentTimeMillis()
 		write {
 			val id = database.get().readingSessionDao().insert(
-				ReadingSessionEntity.of(ReadingItem.Ebook(bookId), startedAt = startedAt, startPage = page),
+				ReadingSessionEntity.of(
+					ReadingItem.Ebook(bookId),
+					startedAt = startedAt,
+					startPage = page,
+					startProgress = progress.coerceIn(0f, 1f),
+				),
 			)
 			session = OpenSession(id, startedAt)
 		}
 	}
 
-	/** Closes the open sitting at 1-based [page]. Sittings under [MIN_SESSION_MS] are dropped as noise. */
-	fun finishSession(page: Int) {
+	/** Closes the open sitting. Sittings under [MIN_SESSION_MS] are dropped as noise. */
+	fun finishSession(page: Int, progress: Float) {
 		val endedAt = System.currentTimeMillis()
 		write {
 			val open = session ?: return@write
 			session = null
 			val sessions = database.get().readingSessionDao()
-			if (endedAt - open.startedAt < MIN_SESSION_MS) sessions.delete(open.id) else sessions.end(open.id, endedAt, page)
+			if (endedAt - open.startedAt < MIN_SESSION_MS) {
+				sessions.delete(open.id)
+			} else {
+				sessions.end(open.id, endedAt, page, progress.coerceIn(0f, 1f))
+			}
 		}
 	}
 

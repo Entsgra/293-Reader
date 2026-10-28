@@ -26,4 +26,12 @@ internal val MIGRATION_2_3 = object : Migration(2, 3) {
 	}
 }
 
-internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+/** v4: sittings record progress through the book, since EPUB and TXT have no fixed pages. */
+internal val MIGRATION_3_4 = object : Migration(3, 4) {
+	override fun migrate(db: SupportSQLiteDatabase) {
+		db.execSQL("ALTER TABLE `reading_sessions` ADD COLUMN `start_progress` REAL")
+		db.execSQL("ALTER TABLE `reading_sessions` ADD COLUMN `end_progress` REAL")
+	}
+}
+
+internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
