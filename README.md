@@ -13,7 +13,7 @@ Distributed through GitHub releases only, self-signed.
 | 1 | Scaffold, theme and components, navigation shell, encrypted database, data model | Done |
 | 2 | Import, library UI, folders | Done |
 | 3 | PDF and comic readers (CBZ, CB7) | Done |
-| 4 | EPUB and TXT readers | |
+| 4 | EPUB and TXT readers | Done |
 | 5 | Physical book tracking, reading log UI | |
 | 6 | Locked folders, biometric/PIN, passphrase | |
 | 7 | Performance pass, baseline profiles, release config | |
@@ -39,9 +39,10 @@ the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI licen
 - **Search:** title and author, every word as a prefix, ignoring case and accents ("brucke"
   finds "Brücke"). Books in locked folders never appear in results.
 - **Covers:** stored encrypted and decoded at grid size. PDF and comic covers come from the
-  first page; books in formats without a reader yet show the title and format. When a format
-  gains a reader, books imported before it get their covers and page counts at the next start,
-  keeping any title or author edited by hand.
+  first page, EPUB covers from the cover image the book names (else an image called cover, or
+  its first full-page picture); TXT books, and EPUBs without a picture, show the title and
+  format. When a format gains a reader, books imported before it get their covers and page
+  counts at the next start, keeping any title or author edited by hand.
 
 ## Reading (PDF, CBZ, CB7)
 
@@ -65,6 +66,27 @@ the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI licen
 - **Memory:** page bitmaps come from a shared pool (48 MB of idle bitmaps at most, freed when
   the app is backgrounded); rendering runs off the main thread; the next and previous screen
   render ahead.
+
+## Reading (EPUB, TXT)
+
+- **Layout:** the app lays the text out itself, a chapter at a time, to the screen and the text
+  size (Small, Medium, Large, for every book). Structure comes from the markup (headings,
+  paragraphs, quotes, lists, emphasis, pictures); the book's CSS is ignored, so every book
+  reads in Jost on the theme's ground. Hyphenation follows the book's language.
+- **Turning:** as in page mode: swipe, or tap the outer thirds; the middle shows the controls
+  (progress scrubber, text size, contents). Turning past a chapter's last page carries on into
+  the next. A right-to-left EPUB turns the other way.
+- **Contents and links:** the EPUB 3 nav document, else the EPUB 2 NCX. Links inside the book
+  jump to their target; links out of it are plain text, since the app has no network.
+- **Position:** a chapter and a character offset, so it survives a change of text size or
+  rotation. Progress is weighed by chapter length. Sittings go to the reading log as for PDFs,
+  with progress in place of pages.
+- **EPUB:** EPUB 2 and 3 through the app's own parser, read in place from the encrypted zip. DRM
+  is refused (font obfuscation is fine). DTDs are never processed. A damaged chapter shows a
+  note and the rest of the book still reads.
+- **TXT:** UTF-8, UTF-16 with a byte order mark, else Windows-1252. Paragraphs come from blank
+  lines, hard-wrapped lines are joined, and lines such as "Chapter 12" or "PART TWO" start
+  chapters. Files over 16 MB are refused.
 
 ## Build
 
@@ -101,6 +123,8 @@ reader/api          format-neutral reader contract, bitmap pool
 reader/archive      zip and 7z over a decrypting channel
 reader/pdf          PDF through PdfRenderer
 reader/comic        CBZ and CB7
+reader/epub         EPUB 2 and 3: OPF, nav/NCX and XHTML parsing
+reader/txt          plain text: encoding detection, paragraphs and chapters
 feature/*           library, reader, physical (shelf), log, settings
 ```
 
