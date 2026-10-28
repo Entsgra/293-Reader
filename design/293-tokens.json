@@ -1,0 +1,314 @@
+{
+ "name": "293",
+ "version": 2,
+ "color": {
+  "themes": [
+   {
+    "id": "light",
+    "name": "Light"
+   },
+   {
+    "id": "dark",
+    "name": "Dark"
+   },
+   {
+    "id": "yellow",
+    "name": "Light yellow"
+   },
+   {
+    "id": "pink",
+    "name": "Light pink"
+   }
+  ],
+  "tokens": [
+   {
+    "name": "fog",
+    "value": {
+     "light": "#d9d9d4",
+     "dark": "#141516",
+     "yellow": "#e4d9ae",
+     "pink": "#e7d2ce"
+    },
+    "usage": "Screen ground."
+   },
+   {
+    "name": "fog-raised",
+    "value": {
+     "light": "#e8e8e4",
+     "dark": "#212325",
+     "yellow": "#f0e8c6",
+     "pink": "#f2e4e1"
+    },
+    "usage": "Terrace faces: cards, inputs, secondary buttons, the bottom bar."
+   },
+   {
+    "name": "ledge",
+    "value": {
+     "light": "#bcbcb6",
+     "dark": "#34373a",
+     "yellow": "#c8bb88",
+     "pink": "#ccb0aa"
+    },
+    "usage": "The stepped underside of a terrace, pressed and disabled fills. Decorative depth only."
+   },
+   {
+    "name": "rib",
+    "value": {
+     "light": "#4a4c4d",
+     "dark": "#8d8f8f",
+     "yellow": "#4e4934",
+     "pink": "#523e3b"
+    },
+    "usage": "Row rules, control outlines and the divider inside a Window plate. 3:1 or better on fog and fog-raised."
+   },
+   {
+    "name": "ink",
+    "value": {
+     "light": "#18191a",
+     "dark": "#dddcd6",
+     "yellow": "#1c1a12",
+     "pink": "#1d1517"
+    },
+    "usage": "Text and icons on fog, fog-raised and ledge."
+   },
+   {
+    "name": "ink-muted",
+    "value": {
+     "light": "#4a4c4d",
+     "dark": "#a2a4a4",
+     "yellow": "#4e4934",
+     "pink": "#523e3b"
+    },
+    "usage": "Labels above figures, availability, unselected tabs. On fog and fog-raised."
+   },
+   {
+    "name": "action",
+    "value": {
+     "light": "#18191a",
+     "dark": "#dddcd6",
+     "yellow": "#1c1a12",
+     "pink": "#1d1517"
+    },
+    "usage": "The silhouette as an action: primary button, selected chip or time, active tab edge, current step, switch-on, the top edge of the key card."
+   },
+   {
+    "name": "on-action",
+    "value": {
+     "light": "#e8e8e4",
+     "dark": "#141516",
+     "yellow": "#f0e8c6",
+     "pink": "#f2e4e1"
+    },
+    "usage": "Text and icons on action."
+   },
+   {
+    "name": "banner",
+    "value": {
+     "light": "#9f3426",
+     "dark": "#e3725f",
+     "yellow": "#952c1d",
+     "pink": "#8e2618"
+    },
+    "usage": "The one faded red: live status, count badges, errors, expiry warnings. One red thing per screen."
+   },
+   {
+    "name": "on-banner",
+    "value": {
+     "light": "#f1efe9",
+     "dark": "#141516",
+     "yellow": "#f6f0e2",
+     "pink": "#f7ece9"
+    },
+    "usage": "Text on a banner fill."
+   }
+  ]
+ },
+ "type": {
+  "fonts": [],
+  "families": {
+   "sans": "\"Jost\", \"Futura\", Arial, sans-serif"
+  },
+  "groups": [
+   {
+    "name": "Display",
+    "family": "sans",
+    "styles": [
+     {
+      "name": "display",
+      "fontSize": "40px",
+      "lineHeight": "42px",
+      "fontWeight": 600,
+      "letterSpacing": "0.04em",
+      "sample": "SERVICES",
+      "usage": "Screen title, uppercase. It stands alone: no kicker line above it."
+     },
+     {
+      "name": "figure",
+      "fontSize": "72px",
+      "lineHeight": "68px",
+      "fontWeight": 600,
+      "letterSpacing": "0.01em",
+      "sample": "B-047",
+      "usage": "The number a screen exists for (ticket, window). Always under a label, never inline in a sentence."
+     },
+     {
+      "name": "time",
+      "fontSize": "26px",
+      "lineHeight": "32px",
+      "fontWeight": 600,
+      "letterSpacing": "0.02em",
+      "sample": "11:40",
+      "usage": "Times in a Timetable, dates in a notice row."
+     },
+     {
+      "name": "headline",
+      "fontSize": "22px",
+      "lineHeight": "28px",
+      "fontWeight": 600,
+      "letterSpacing": "0.06em",
+      "sample": "BOOK A SLOT",
+      "usage": "Section titles, uppercase."
+     }
+    ]
+   },
+   {
+    "name": "Text",
+    "family": "sans",
+    "styles": [
+     {
+      "name": "title",
+      "fontSize": "17px",
+      "lineHeight": "24px",
+      "fontWeight": 600,
+      "sample": "Residence registration",
+      "usage": "Row and card titles. One line of meaning; no subtitle unless it changes a decision."
+     },
+     {
+      "name": "body",
+      "fontSize": "16px",
+      "lineHeight": "24px",
+      "fontWeight": 400,
+      "sample": "6 ahead of you, about 20 minutes.",
+      "usage": "Running text. One sentence per card where possible."
+     },
+     {
+      "name": "label",
+      "fontSize": "14px",
+      "lineHeight": "20px",
+      "fontWeight": 600,
+      "letterSpacing": "0.1em",
+      "sample": "YOUR NUMBER",
+      "usage": "Buttons, chips, field labels, the label above a figure, nav. Uppercase."
+     },
+     {
+      "name": "label-small",
+      "fontSize": "11px",
+      "lineHeight": "14px",
+      "fontWeight": 600,
+      "letterSpacing": "0.1em",
+      "sample": "OCT",
+      "usage": "Nav labels and the month under a date. Uppercase. Never sentences."
+     }
+    ]
+   }
+  ]
+ },
+ "spacing": {
+  "tokens": [
+   {
+    "name": "space-1",
+    "value": "4px",
+    "usage": "Icon-to-label gap."
+   },
+   {
+    "name": "space-2",
+    "value": "8px",
+    "usage": "Gap inside chips and between stacked labels."
+   },
+   {
+    "name": "space-3",
+    "value": "12px",
+    "usage": "Gap between sibling controls."
+   },
+   {
+    "name": "space-4",
+    "value": "16px",
+    "usage": "Screen side margin on phones; card padding."
+   },
+   {
+    "name": "space-5",
+    "value": "20px",
+    "usage": "Horizontal button padding."
+   },
+   {
+    "name": "space-6",
+    "value": "24px",
+    "usage": "Gap between content groups."
+   },
+   {
+    "name": "space-8",
+    "value": "32px",
+    "usage": "Gap between screen sections."
+   },
+   {
+    "name": "space-12",
+    "value": "48px",
+    "usage": "Air above a monumental title."
+   }
+  ]
+ },
+ "radius": {
+  "tokens": [
+   {
+    "name": "radius-none",
+    "value": "0px",
+    "usage": "Everything by default."
+   },
+   {
+    "name": "radius-sweep",
+    "value": "120px",
+    "usage": "The sweep: one long curved corner of one block per screen (bottom-right of the key card)."
+   },
+   {
+    "name": "radius-round",
+    "value": "50%",
+    "usage": "Step markers, the FAB, the switch knob, status dots."
+   }
+  ]
+ },
+ "size": {
+  "note": "Fixed dimensions and strokes.",
+  "tokens": [
+   {
+    "name": "target-min",
+    "value": "48px",
+    "usage": "Minimum hit area for anything tappable."
+   },
+   {
+    "name": "bar-height",
+    "value": "64px",
+    "usage": "Bottom bar height, excluding the gesture inset. Slim: icon plus one label line."
+   },
+   {
+    "name": "row-height",
+    "value": "56px",
+    "usage": "One-line list rows and timetable rows."
+   },
+   {
+    "name": "stroke-trim",
+    "value": "4px",
+    "usage": "The action-coloured edge along the top of the key card and the active tab."
+   },
+   {
+    "name": "ledge-step",
+    "value": "8px",
+    "usage": "How far a terrace ledge steps out below its face."
+   },
+   {
+    "name": "plate-width",
+    "value": "88px",
+    "usage": "Width of a Window plate, divider included."
+   }
+  ]
+ }
+}
