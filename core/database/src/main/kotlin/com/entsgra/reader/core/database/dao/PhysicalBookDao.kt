@@ -13,8 +13,14 @@ interface PhysicalBookDao {
 	@Query("SELECT * FROM physical_books WHERE status = :status ORDER BY updated_at DESC")
 	fun observeByStatus(status: ReadingStatus): Flow<List<PhysicalBookEntity>>
 
+	@Query("SELECT * FROM physical_books ORDER BY updated_at DESC")
+	fun observeAll(): Flow<List<PhysicalBookEntity>>
+
 	@Query("SELECT * FROM physical_books WHERE id = :id")
 	fun observe(id: Long): Flow<PhysicalBookEntity?>
+
+	@Query("SELECT * FROM physical_books WHERE id = :id")
+	suspend fun get(id: Long): PhysicalBookEntity?
 
 	@Insert
 	suspend fun insert(book: PhysicalBookEntity): Long
