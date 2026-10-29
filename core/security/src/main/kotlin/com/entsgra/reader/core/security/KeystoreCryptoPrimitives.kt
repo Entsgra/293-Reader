@@ -1,5 +1,6 @@
 package com.entsgra.reader.core.security
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.InsecureSecretKeyAccess
@@ -65,6 +66,8 @@ class KeystoreCryptoPrimitives @Inject constructor(
 	}
 
 	/** Once the app lock holds the file keyset, the Keystore-only copy goes. */
+	// The KTX edit {} drops the commit result, and this one must be checked.
+	@SuppressLint("UseKtx")
 	@Synchronized
 	internal fun deleteStoredFilesKeyset() {
 		val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
