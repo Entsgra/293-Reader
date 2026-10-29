@@ -15,7 +15,7 @@ Distributed through GitHub releases only, self-signed.
 | 3 | PDF and comic readers (CBZ, CB7) | Done |
 | 4 | EPUB and TXT readers | Done |
 | 5 | Physical book tracking, reading log UI | Done |
-| 6 | Locked folders, biometric/PIN, passphrase | |
+| 6 | Locked folders, biometric/PIN, passphrase | Done |
 | 7 | Performance pass, baseline profiles, release config | |
 
 ## Formats
@@ -37,12 +37,35 @@ the only non-GPL RAR reader for the JVM covers RAR4 only and has a non-OSI licen
 - **Books:** cover grid, sorted by title, last opened or date added. Long press a cover or a
   folder for its actions; tap a cover for the book screen.
 - **Search:** title and author, every word as a prefix, ignoring case and accents ("brucke"
-  finds "Brücke"). Books in locked folders never appear in results.
+  finds "Brücke"). Books in locked folders never appear in results, open or closed.
 - **Covers:** stored encrypted and decoded at grid size. PDF and comic covers come from the
   first page, EPUB covers from the cover image the book names (else an image called cover, or
   its first full-page picture); TXT books, and EPUBs without a picture, show the title and
   format. When a format gains a reader, books imported before it get their covers and page
   counts at the next start, keeping any title or author edited by hand.
+- **Locked folders:** long press a folder and choose Lock to protect it with a PIN (6 or
+  more digits) or a passphrase (8 or more characters). A PIN only stops someone holding the
+  phone; a passphrase is recommended. Fingerprint unlock can be added on top. Opening a locked
+  folder asks for the secret; once open, the folder's actions add Lock now, Change PIN or
+  passphrase, Fingerprint unlock and Remove lock. A closed folder offers only Unlock, and
+  cannot be deleted or have books moved in or out. Locks do not nest: a folder inside a
+  locked folder cannot be locked, and a locked folder cannot be moved into another one.
+- **While a folder is closed** the library shows its name, how many books and folders it
+  holds, and their sizes, formats, page counts, dates and reading sittings. Titles, authors,
+  covers, subfolder names and the books themselves stay sealed.
+- **Locking and unlocking** re-encrypts every book and cover under the folder's own key (or
+  back under the app's key when the lock is removed), with progress in the library. Each book
+  switches in one step, so a crash or a killed app leaves every book readable; the work
+  resumes at the next start.
+- **Closing:** open folders close on Lock now, when the screen turns off, and after the app
+  has been in the background for the Lock after time (at once, 1, 5 or 15 minutes; 1 by
+  default). A book open in the reader closes with its folder.
+- **App lock** (Settings, Locks) puts the whole library behind a PIN or passphrase. Locking it
+  ends the app, after the file being imported finishes, and it follows the Lock after time
+  only, not screen off.
+- **Forgotten secret:** there is no recovery. The books in that folder, or the whole library
+  for the app lock, cannot be opened again. A closed folder cannot be deleted from the app;
+  clearing the app's storage in Android settings removes everything.
 
 ## Reading (PDF, CBZ, CB7)
 
@@ -133,7 +156,8 @@ app/                application, activity, navigation shell, signing
 core/model          pure Kotlin domain types
 core/designsystem   the only home for design tokens: colours, Jost type scale, spacing,
                     sizes, shapes, motion, icons, and the 293 components
-core/security       Keystore-backed Tink keys, file encryption, database key
+core/security       Keystore-backed Tink keys, file encryption, database key, Argon2id
+                    secret wraps, folder keyring, app lock, unlock rate limit
 core/database       Room on SQLCipher: entities, DAOs, schema exports in schemas/
 core/data           repositories and settings
 reader/api          format-neutral reader contract, bitmap pool
@@ -142,7 +166,8 @@ reader/pdf          PDF through PdfRenderer
 reader/comic        CBZ and CB7
 reader/epub         EPUB 2 and 3: OPF, nav/NCX and XHTML parsing
 reader/txt          plain text: encoding detection, paragraphs and chapters
-feature/*           library, reader, physical (shelf), log, settings
+feature/*           library, reader, physical (shelf), log, settings, lock (unlock and
+                    setup screens)
 ```
 
 ## Design
@@ -164,7 +189,35 @@ for all four themes are in `ComponentPreviews.kt`.
   stored in no-backup storage. The database opens off the main thread.
 - **Backups:** disabled. Keystore keys cannot leave the device, so a backup could not be read
   anyway.
-- **Search:** queries take the set of visible folders, so locked folders never appear in results.
+- **Search:** queries take the set of unlocked folders, and sealed books have no plain title
+  or author to match, so locked folders never appear in results.
+- **Locked folders:** each has its own Tink keysets (StreamingAead for files, AEAD for
+  titles, authors, content hashes and subfolder names). The keysets are wrapped twice: first
+  under a key derived from the PIN or passphrase with Argon2id (Bouncy Castle; 64 MiB, 3
+  passes, 1 lane, random salt, parameters bound as associated data), then under a
+  non-exportable Android Keystore AES-GCM key that belongs to that folder alone. Copying the
+  app's data off the phone is not enough without the Keystore, and the Keystore is not enough
+  without the secret. Fingerprint unlock is a separate wrap under a Keystore key that needs a
+  strong biometric and is invalidated when a fingerprint is added; when that happens the PIN
+  or passphrase still works and the app offers to set fingerprint up again. Sealed values are
+  bound to their row, so they cannot be swapped between books. Changing the secret re-wraps
+  the keysets only.
+- **App lock:** the database passphrase and the app's file keyset are wrapped the same two
+  ways, and their Keystore-only copies are deleted, so nothing can be read until the secret is
+  entered. Locking it ends the process, so no key stays in memory.
+- **Wrong guesses:** four are free, then each one waits 30 seconds, doubling up to an hour.
+  The count survives restarts and clock changes. Nothing is wiped.
+- **Screenshots:** locked folders, books in them and the unlock screens are kept out of
+  screenshots and the recent apps view. Settings can block screenshots everywhere (off by
+  default). With the app lock on, the recent apps view shows no picture of the app.
+- **Leftovers:** the database deletes securely (`secure_delete`) and truncates its write-ahead
+  log after sealing, so plain titles do not linger in free pages. Flash storage can still keep
+  old blocks, and Java strings and Tink keys cannot be zeroed in memory.
+- **Limits:** a PIN has a small key space; someone with the app's data and the phone's
+  Keystore could guess it offline. Android may freeze a background app, so the Lock after
+  time can run late until the app comes back, when it locks before showing anything.
+  Duplicate detection does not see books inside locked folders, and covers and page counts
+  for locked books are not backfilled while they are closed.
 
 ## License
 
