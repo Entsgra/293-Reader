@@ -92,7 +92,7 @@ class ReadingLogDaoTest {
 	@Test
 	fun ebooksInHiddenFoldersStayOutOfTheLog() = runTest {
 		val open = db.folderDao().insert(FolderEntity(parentId = null, name = "Open", createdAt = 1))
-		val locked = db.folderDao().insert(FolderEntity(parentId = null, name = "Locked", lock = FolderLock.DEVICE, createdAt = 1))
+		val locked = db.folderDao().insert(FolderEntity(parentId = null, name = "Locked", lock = FolderLock.PIN, createdAt = 1))
 		sitting(ReadingItem.Ebook(ebook("Seen", open)), start = 1, end = 2)
 		sitting(ReadingItem.Ebook(ebook("Hidden", locked)), start = 3, end = 4)
 		sitting(ReadingItem.Physical(physical("Shelf")), start = 5, end = 6)

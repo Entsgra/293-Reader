@@ -35,7 +35,7 @@ class LibraryLogicTest {
 		val folders = listOf(
 			FolderEntity(id = 1, parentId = null, name = "Open", createdAt = 0),
 			FolderEntity(id = 2, parentId = 1, name = "Inside open", createdAt = 0),
-			FolderEntity(id = 3, parentId = null, name = "Locked", lock = FolderLock.DEVICE, createdAt = 0),
+			FolderEntity(id = 3, parentId = null, name = "Locked", lock = FolderLock.PIN, createdAt = 0),
 			FolderEntity(id = 4, parentId = 3, name = "Inside locked", createdAt = 0),
 			FolderEntity(id = 5, parentId = 4, name = "Deeper", createdAt = 0),
 		)

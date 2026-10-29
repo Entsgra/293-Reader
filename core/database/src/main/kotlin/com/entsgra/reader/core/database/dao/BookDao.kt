@@ -1,6 +1,7 @@
 package com.entsgra.reader.core.database.dao
 
 import androidx.paging.PagingSource
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -36,6 +37,17 @@ interface BookDao {
 	)
 	fun search(match: String, visibleFolderIds: List<Long>): PagingSource<Int, BookEntity>
 
+	/** A sealed folder's books, sorted in memory once unsealed. */
+	@Query("SELECT * FROM books WHERE folder_id IS :folderId")
+	fun observeIn(folderId: Long?): Flow<List<BookEntity>>
+
+	/** Where each book is and which key it is under, to find books whose key must change. */
+	@Query("SELECT id, folder_id, key_folder_id FROM books")
+	suspend fun keyPlaces(): List<KeyPlace>
+
+	@Query("SELECT COUNT(*) FROM books WHERE key_folder_id = :keyFolderId")
+	suspend fun countUnderKey(keyFolderId: Long): Int
+
 	@Query("SELECT * FROM books WHERE id = :id")
 	suspend fun get(id: Long): BookEntity?
 
@@ -57,6 +69,31 @@ interface BookDao {
 
 	@Query("UPDATE books SET title = :title, author = :author WHERE id = :id")
 	suspend fun updateDetails(id: Long, title: String, author: String?)
+
+	/** Title, author and hash as stored: plain with [sealed] null, or empty with [sealed] set. */
+	@Query(
+		"UPDATE books SET title = :title, author = :author, content_hash = :contentHash, sealed = :sealed " +
+			"WHERE id = :id",
+	)
+	suspend fun writeDetails(id: Long, title: String, author: String?, contentHash: String, sealed: ByteArray?)
+
+	/** Points the row at files re-encrypted under [keyFolderId], in [folderId], in one statement. */
+	@Query(
+		"UPDATE books SET folder_id = :folderId, file_name = :fileName, cover_file_name = :coverFileName, " +
+			"key_folder_id = :keyFolderId, title = :title, author = :author, content_hash = :contentHash, " +
+			"sealed = :sealed WHERE id = :id",
+	)
+	suspend fun rekey(
+		id: Long,
+		folderId: Long?,
+		fileName: String,
+		coverFileName: String?,
+		keyFolderId: Long?,
+		title: String,
+		author: String?,
+		contentHash: String,
+		sealed: ByteArray?,
+	)
 
 	@Query("UPDATE books SET folder_id = :folderId WHERE id = :id")
 	suspend fun move(id: Long, folderId: Long?)
@@ -81,6 +118,15 @@ interface BookDao {
 		version: Int,
 	)
 
+	@Query("UPDATE books SET page_count = :pageCount, cover_file_name = :coverFileName, reading_direction = :direction, metadata_version = :version WHERE id = :id")
+	suspend fun applyMetadataSealed(
+		id: Long,
+		pageCount: Int?,
+		coverFileName: String?,
+		direction: ReadingDirection,
+		version: Int,
+	)
+
 	@Query("UPDATE books SET metadata_version = :version WHERE id = :id")
 	suspend fun setMetadataVersion(id: Long, version: Int)
 
@@ -96,3 +142,9 @@ interface BookDao {
 	@Query("DELETE FROM books WHERE id = :id")
 	suspend fun delete(id: Long)
 }
+
+data class KeyPlace(
+	val id: Long,
+	@ColumnInfo(name = "folder_id") val folderId: Long?,
+	@ColumnInfo(name = "key_folder_id") val keyFolderId: Long?,
+)

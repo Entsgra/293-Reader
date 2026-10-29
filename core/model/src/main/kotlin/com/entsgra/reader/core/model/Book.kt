@@ -16,6 +16,8 @@ data class Book(
 	val spreadMode: SpreadMode,
 	val addedAt: Long,
 	val lastOpenedAt: Long?,
+	/** The locked folder whose key encrypts this book's file and cover; null for the app key. */
+	val keyFolderId: Long? = null,
 )
 
 /** File formats the reader layer understands. New formats are added here and behind `reader:api`. */

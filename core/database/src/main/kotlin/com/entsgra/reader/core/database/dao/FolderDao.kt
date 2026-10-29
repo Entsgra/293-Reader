@@ -59,6 +59,13 @@ interface FolderDao {
 
 	@Query("UPDATE folders SET name = :name WHERE id = :id")
 	suspend fun rename(id: Long, name: String)
+
+	/** The name as stored: plain with [sealedName] null, or empty and sealed under [keyFolderId]. */
+	@Query("UPDATE folders SET name = :name, sealed_name = :sealedName, key_folder_id = :keyFolderId WHERE id = :id")
+	suspend fun writeName(id: Long, name: String, sealedName: ByteArray?, keyFolderId: Long?)
+
+	@Query("SELECT * FROM folders WHERE parent_id IS :parentId")
+	suspend fun children(parentId: Long?): List<FolderEntity>
 }
 
 data class FolderWithCount(

@@ -34,4 +34,29 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
 	}
 }
 
-internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+/**
+ * v5: locked folders hold their own keys. Books and folder names record which folder's key
+ * seals them, and `folder_keys` stores each locked folder's sealed keys. The old lock kinds
+ * (device, passphrase) never had a key or a way to be set, so any folder carrying one is
+ * reset to unlocked rather than left claiming a lock nothing enforces.
+ */
+internal val MIGRATION_4_5 = object : Migration(4, 5) {
+	override fun migrate(db: SupportSQLiteDatabase) {
+		db.execSQL("UPDATE `folders` SET `lock` = 'NONE' WHERE `lock` != 'NONE'")
+		db.execSQL("ALTER TABLE `folders` ADD COLUMN `key_folder_id` INTEGER")
+		db.execSQL("ALTER TABLE `folders` ADD COLUMN `sealed_name` BLOB")
+		db.execSQL("ALTER TABLE `books` ADD COLUMN `key_folder_id` INTEGER")
+		db.execSQL("ALTER TABLE `books` ADD COLUMN `sealed` BLOB")
+		db.execSQL("CREATE INDEX IF NOT EXISTS `index_books_key_folder_id` ON `books` (`key_folder_id`)")
+		db.execSQL(
+			"CREATE TABLE IF NOT EXISTS `folder_keys` (`folder_id` INTEGER NOT NULL, " +
+				"`kdf_memory_kib` INTEGER NOT NULL, `kdf_iterations` INTEGER NOT NULL, " +
+				"`kdf_parallelism` INTEGER NOT NULL, `salt` BLOB NOT NULL, `sealed` BLOB NOT NULL, " +
+				"`biometric` BLOB, `removing` INTEGER NOT NULL DEFAULT 0, `created_at` INTEGER NOT NULL, " +
+				"PRIMARY KEY(`folder_id`), FOREIGN KEY(`folder_id`) REFERENCES `folders`(`id`) " +
+				"ON UPDATE NO ACTION ON DELETE CASCADE )",
+		)
+	}
+}
+
+internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)

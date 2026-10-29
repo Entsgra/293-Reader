@@ -31,6 +31,7 @@ import com.entsgra.reader.core.model.SpreadMode
 		Index("content_hash"),
 		Index("added_at"),
 		Index("last_opened_at"),
+		Index("key_folder_id"),
 	],
 )
 data class BookEntity(
@@ -56,6 +57,14 @@ data class BookEntity(
 	 * gives books imported before it their covers.
 	 */
 	@ColumnInfo(name = "metadata_version", defaultValue = "0") val metadataVersion: Int = 0,
+	/**
+	 * The locked folder whose key encrypts the file, the cover and [sealed]; null for the app
+	 * key. Set per book, so a crash halfway through re-encrypting a folder leaves every row
+	 * pointing at the key its files are really under.
+	 */
+	@ColumnInfo(name = "key_folder_id") val keyFolderId: Long? = null,
+	/** Title, author and content hash under [keyFolderId]'s key; those columns are then empty. */
+	val sealed: ByteArray? = null,
 )
 
 /**
@@ -69,7 +78,12 @@ data class BookFtsEntity(
 	val author: String?,
 )
 
-fun BookEntity.asModel() = Book(
+/** With the given details in place of sealed ones, once unsealed. */
+fun BookEntity.asModel(
+	title: String = this.title,
+	author: String? = this.author,
+	contentHash: String = this.contentHash,
+) = Book(
 	id = id,
 	folderId = folderId,
 	title = title,
@@ -84,4 +98,5 @@ fun BookEntity.asModel() = Book(
 	spreadMode = spreadMode,
 	addedAt = addedAt,
 	lastOpenedAt = lastOpenedAt,
+	keyFolderId = keyFolderId,
 )

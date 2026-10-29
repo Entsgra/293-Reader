@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import com.entsgra.reader.core.database.dao.BookDao
 import com.entsgra.reader.core.database.dao.BookmarkDao
 import com.entsgra.reader.core.database.dao.FolderDao
+import com.entsgra.reader.core.database.dao.FolderKeyDao
 import com.entsgra.reader.core.database.dao.LibraryDao
 import com.entsgra.reader.core.database.dao.PhysicalBookDao
 import com.entsgra.reader.core.database.dao.ReadingPositionDao
@@ -14,6 +15,7 @@ import com.entsgra.reader.core.database.entity.BookEntity
 import com.entsgra.reader.core.database.entity.BookFtsEntity
 import com.entsgra.reader.core.database.entity.BookmarkEntity
 import com.entsgra.reader.core.database.entity.FolderEntity
+import com.entsgra.reader.core.database.entity.FolderKeyEntity
 import com.entsgra.reader.core.database.entity.PhysicalBookEntity
 import com.entsgra.reader.core.database.entity.ReadingPositionEntity
 import com.entsgra.reader.core.database.entity.ReadingSessionEntity
@@ -27,8 +29,9 @@ import com.entsgra.reader.core.database.entity.ReadingSessionEntity
 		ReadingSessionEntity::class,
 		BookmarkEntity::class,
 		ReadingPositionEntity::class,
+		FolderKeyEntity::class,
 	],
-	version = 4,
+	version = 5,
 	exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -40,4 +43,5 @@ abstract class ReaderDatabase : RoomDatabase() {
 	abstract fun readingSessionDao(): ReadingSessionDao
 	abstract fun bookmarkDao(): BookmarkDao
 	abstract fun readingPositionDao(): ReadingPositionDao
+	abstract fun folderKeyDao(): FolderKeyDao
 }
