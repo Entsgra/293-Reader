@@ -29,6 +29,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import com.entsgra.reader.core.designsystem.theme.ReaderSize
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
@@ -36,6 +38,7 @@ import com.entsgra.reader.core.designsystem.theme.ReaderTheme
 /**
  * A one-line input: an uppercase label above a `fog-raised` face with a `rib` outline. Focus
  * draws the standard ring. An error turns the outline `banner` and puts one sentence below.
+ * [secret] hides what is typed and keeps it out of autocorrect and suggestions.
  */
 @Composable
 fun ReaderTextField(
@@ -50,6 +53,7 @@ fun ReaderTextField(
 	imeAction: ImeAction = ImeAction.Done,
 	capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
 	keyboardType: KeyboardType = KeyboardType.Text,
+	secret: Boolean = false,
 	onImeAction: () -> Unit = {},
 ) {
 	val colors = ReaderTheme.colors
@@ -64,10 +68,12 @@ fun ReaderTextField(
 			cursorBrush = SolidColor(colors.action),
 			interactionSource = interaction,
 			keyboardOptions = KeyboardOptions(
-				capitalization = capitalization,
+				capitalization = if (secret) KeyboardCapitalization.None else capitalization,
+				autoCorrectEnabled = !secret,
 				keyboardType = keyboardType,
 				imeAction = imeAction,
 			),
+			visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
 			keyboardActions = KeyboardActions(onAny = { onImeAction() }),
 			modifier = Modifier
 				.fillMaxWidth()
