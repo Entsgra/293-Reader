@@ -344,6 +344,7 @@ private fun failureMessage(failure: ImportFailure): String = stringResource(
 		ImportFailure.Reason.RAR -> R.string.import_failed_rar
 		ImportFailure.Reason.UNREADABLE -> R.string.import_failed_unreadable
 		ImportFailure.Reason.NO_SPACE -> R.string.import_failed_no_space
+		ImportFailure.Reason.LOCKED -> R.string.import_failed_locked
 		ImportFailure.Reason.FAILED -> R.string.import_failed_other
 	},
 	failure.fileName,

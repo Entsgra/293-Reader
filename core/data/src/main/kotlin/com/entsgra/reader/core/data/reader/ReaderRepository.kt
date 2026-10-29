@@ -3,6 +3,8 @@ package com.entsgra.reader.core.data.reader
 import com.entsgra.reader.core.data.ApplicationScope
 import com.entsgra.reader.core.data.library.BookFiles
 import com.entsgra.reader.core.data.library.EncryptedBookSource
+import com.entsgra.reader.core.data.lock.BookLockedException
+import com.entsgra.reader.core.data.lock.Sealer
 import com.entsgra.reader.core.database.DatabaseProvider
 import com.entsgra.reader.core.database.entity.ReadingPositionEntity
 import com.entsgra.reader.core.database.entity.ReadingSessionEntity
@@ -14,6 +16,8 @@ import com.entsgra.reader.core.model.ReadingItem
 import com.entsgra.reader.core.model.ReadingPosition
 import com.entsgra.reader.core.model.SpreadMode
 import com.entsgra.reader.core.security.FileCipher
+import com.entsgra.reader.core.security.FolderLockedException
+import com.entsgra.reader.core.security.Keyring
 import com.entsgra.reader.reader.api.BookDocument
 import com.entsgra.reader.reader.api.BookFormatRegistry
 import com.entsgra.reader.reader.api.BookOpenException
@@ -24,6 +28,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -41,6 +47,8 @@ class ReaderRepository @Inject constructor(
 	private val files: BookFiles,
 	private val cipher: FileCipher,
 	private val formats: BookFormatRegistry,
+	private val sealer: Sealer,
+	private val keyring: Keyring,
 	@ApplicationScope private val scope: CoroutineScope,
 ) {
 	/** Keeps writes in call order; the mutex is fair, and each write queues before it suspends. */
@@ -51,9 +59,18 @@ class ReaderRepository @Inject constructor(
 
 	private data class OpenSession(val id: Long, val startedAt: Long)
 
+	/** The book, or null once it is deleted or the folder it is locked in closes. */
 	fun book(id: Long): Flow<Book?> = flow {
-		emitAll(database.get().bookDao().observe(id).map { it?.asModel() })
+		emitAll(
+			combine(database.get().bookDao().observe(id), keyring.unlocked) { entity, _ ->
+				entity?.let(sealer::book)
+			},
+		)
 	}
+
+	/** True while [book]'s locked folder is closed: the reader must let go of it. */
+	fun lockedOut(book: Book): Flow<Boolean> =
+		keyring.unlocked.map { book.keyFolderId != null && book.keyFolderId !in it }.distinctUntilChanged()
 
 	fun position(bookId: Long): Flow<ReadingPosition?> = flow {
 		emitAll(database.get().readingPositionDao().observe(bookId).map { it?.asModel() })
@@ -71,9 +88,11 @@ class ReaderRepository @Inject constructor(
 	suspend fun open(book: Book): BookDocument {
 		val format = formats.forId(book.format) ?: throw BookOpenException(BookOpenException.Reason.UNSUPPORTED)
 		val document = try {
-			format.open(EncryptedBookSource(files.book(book.fileName), book.fileSize, cipher))
+			format.open(EncryptedBookSource(files.book(book.fileName), book.fileSize, cipher, book.keyFolderId))
 		} catch (e: BookOpenException) {
 			throw e
+		} catch (e: FolderLockedException) {
+			throw BookLockedException()
 		} catch (e: CancellationException) {
 			throw e
 		} catch (e: Exception) {

@@ -5,11 +5,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.entsgra.reader.core.database.DatabaseProvider
+import com.entsgra.reader.core.data.TestGraph
 import com.entsgra.reader.core.model.BookFormatId
-import com.entsgra.reader.core.security.DatabaseKey
-import com.entsgra.reader.core.security.FileCipher
-import com.entsgra.reader.core.security.KeystoreCryptoPrimitives
 import com.entsgra.reader.core.model.ReadingDirection
 import com.entsgra.reader.reader.api.BookDocument
 import com.entsgra.reader.reader.api.BookFormat
@@ -23,9 +20,6 @@ import java.io.File
 import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -39,16 +33,13 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class BookImporterTest {
 	private val context = ApplicationProvider.getApplicationContext<Context>()
-	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-	private val crypto = KeystoreCryptoPrimitives(context)
-	private val cipher = FileCipher(crypto)
-	private val database = DatabaseProvider(context, DatabaseKey(context, crypto))
-	private val files = BookFiles(context)
-	private val covers = CoverStore(files, cipher)
-	private val importer = BookImporter(
-		context, database, files, cipher, covers, BookFormatRegistry(emptySet()), scope,
-	)
-	private val library = LibraryRepository(database, files, covers)
+	private val graph = TestGraph(context)
+	private val scope = graph.scope
+	private val cipher = graph.cipher
+	private val database = graph.database
+	private val covers = graph.covers
+	private val importer = graph.importer()
+	private val library = graph.library
 	private val inbox = File(context.cacheDir, "inbox")
 	private val stored get() = File(context.noBackupFilesDir, "books")
 
@@ -190,7 +181,7 @@ class BookImporterTest {
 	@Test
 	fun importReadsMetadataAndCoverFromTheFormat() = runBlocking<Unit> {
 		val format = FakePdfFormat()
-		val reading = BookImporter(context, database, files, cipher, covers, BookFormatRegistry(setOf(format)), scope)
+		val reading = graph.importer(BookFormatRegistry(setOf(format)))
 		reading.import(listOf(file("austerlitz.pdf", pdf)), null)
 		withTimeout(30_000) { reading.state.first { it is ImportState.Finished } }
 
@@ -211,7 +202,7 @@ class BookImporterTest {
 		books.updateDetails(id, "My Vertigo", null)
 
 		val format = FakePdfFormat()
-		val reading = BookImporter(context, database, files, cipher, covers, BookFormatRegistry(setOf(format)), scope)
+		val reading = graph.importer(BookFormatRegistry(setOf(format)))
 		reading.backfillMetadata()
 		reading.backfillMetadata()
 

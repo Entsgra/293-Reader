@@ -33,6 +33,7 @@
 	<string name="import_failed_rar">%s is a RAR comic (CBR), which is not supported. Convert it to CBZ and import it again.</string>
 	<string name="import_failed_unreadable">%s could not be read. Pick it again from where it is stored.</string>
 	<string name="import_failed_no_space">%s did not fit. Free some storage and import it again.</string>
+	<string name="import_failed_locked">%s was not added: its folder locked first. Unlock the folder and import it again.</string>
 	<string name="import_failed_other">%s could not be imported. Import it again.</string>
 	<plurals name="import_more_failures">
 		<item quantity="one">%d more file could not be imported.</item>
@@ -53,6 +54,7 @@
 	<string name="folder_name_blank">Enter a name.</string>
 	<string name="folder_name_too_long">Use 80 characters or fewer.</string>
 	<string name="folder_name_taken">A folder with that name is already here. Pick another name.</string>
+	<string name="folder_name_locked">The folder is locked. Unlock it and try again.</string>
 	<string name="move_title">Move to</string>
 	<string name="move_current">Here now</string>
 

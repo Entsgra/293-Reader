@@ -10,15 +10,19 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.nio.channels.SeekableByteChannel
 
-/** A [BookSource] over a file encrypted by [FileCipher]. Plaintext stays in memory. */
+/**
+ * A [BookSource] over a file encrypted by [FileCipher], under [keyFolderId]'s key (null: the
+ * app's). Plaintext stays in memory.
+ */
 class EncryptedBookSource(
 	private val file: File,
 	override val size: Long,
 	private val cipher: FileCipher,
+	private val keyFolderId: Long? = null,
 ) : BookSource {
-	override fun openStream(): InputStream = cipher.openInputStream(file)
+	override fun openStream(): InputStream = cipher.openInputStream(file, keyFolderId)
 
-	override fun openChannel(): SeekableByteChannel = cipher.openChannel(file)
+	override fun openChannel(): SeekableByteChannel = cipher.openChannel(file, keyFolderId)
 
 	override fun openMemoryFd(): ParcelFileDescriptor {
 		val fd = Os.memfd_create("book", 0)

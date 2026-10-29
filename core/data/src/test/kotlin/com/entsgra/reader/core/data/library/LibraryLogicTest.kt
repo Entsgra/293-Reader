@@ -69,4 +69,18 @@ class LibraryLogicTest {
 			"Manga" to 1,
 		).inOrder()
 	}
+
+	@Test
+	fun lockedFolderBooksSortLikeTheSqlListings() {
+		fun book(id: Long, title: String, added: Long, opened: Long?) = com.entsgra.reader.core.model.Book(
+			id = id, folderId = 1, title = title, author = null, format = com.entsgra.reader.core.model.BookFormatId.PDF,
+			fileName = "f$id", fileSize = 1, contentHash = "", coverFileName = null, pageCount = null,
+			readingDirection = com.entsgra.reader.core.model.ReadingDirection.LTR,
+			spreadMode = com.entsgra.reader.core.model.SpreadMode.AUTO, addedAt = added, lastOpenedAt = opened,
+		)
+		val books = listOf(book(1, "vertigo", 3, null), book(2, "Austerlitz", 1, 50), book(3, "Campo Santo", 2, 90))
+		assertThat(sortBooks(books, com.entsgra.reader.core.model.LibrarySort.TITLE).map { it.id }).containsExactly(2L, 3L, 1L).inOrder()
+		assertThat(sortBooks(books, com.entsgra.reader.core.model.LibrarySort.ADDED).map { it.id }).containsExactly(1L, 3L, 2L).inOrder()
+		assertThat(sortBooks(books, com.entsgra.reader.core.model.LibrarySort.RECENT).map { it.id }).containsExactly(3L, 2L, 1L).inOrder()
+	}
 }

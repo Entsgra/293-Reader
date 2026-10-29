@@ -67,6 +67,7 @@ internal fun FolderNameDialog(
 				NameCheck.BLANK -> stringResource(R.string.folder_name_blank)
 				NameCheck.TOO_LONG -> stringResource(R.string.folder_name_too_long)
 				NameCheck.TAKEN -> stringResource(R.string.folder_name_taken)
+				NameCheck.LOCKED -> stringResource(R.string.folder_name_locked)
 			},
 			capitalization = KeyboardCapitalization.Words,
 			onImeAction = submit,

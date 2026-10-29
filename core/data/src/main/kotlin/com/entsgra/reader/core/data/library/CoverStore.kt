@@ -25,31 +25,34 @@ class CoverStore @Inject constructor(
 		override fun sizeOf(key: String, value: Bitmap) = value.allocationByteCount / 1024
 	}
 
-	/** Encodes and encrypts [bitmap]. Returns the stored file name. */
-	suspend fun save(bitmap: Bitmap): String = withContext(Dispatchers.IO) {
+	/** Encodes and encrypts [bitmap] under [keyFolderId]'s key. Returns the stored file name. */
+	suspend fun save(bitmap: Bitmap, keyFolderId: Long? = null): String = withContext(Dispatchers.IO) {
 		val encoded = ByteArrayOutputStream().also {
 			bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, QUALITY, it)
 		}
 		val target = files.newCoverFile()
-		cipher.encrypt(ByteArrayInputStream(encoded.toByteArray()), target)
+		cipher.encrypt(ByteArrayInputStream(encoded.toByteArray()), target, keyFolderId)
 		target.name
 	}
 
-	/** The cover [name] scaled down to at least [minWidth] pixels wide, or null if unreadable. */
-	suspend fun load(name: String, minWidth: Int): Bitmap? {
+	/**
+	 * The cover [name] scaled down to at least [minWidth] pixels wide, or null if unreadable or
+	 * under a locked folder's key.
+	 */
+	suspend fun load(name: String, minWidth: Int, keyFolderId: Long? = null): Bitmap? {
 		val key = "$name/$minWidth"
 		memory.get(key)?.let { return it }
 		return withContext(Dispatchers.IO) {
-			runCatching { decode(name, minWidth) }.getOrNull()?.also { memory.put(key, it) }
+			runCatching { decode(name, minWidth, keyFolderId) }.getOrNull()?.also { memory.put(key, it) }
 		}
 	}
 
 	/** Drops decoded covers, for when a folder locks. */
 	fun clearMemory() = memory.evictAll()
 
-	private fun decode(name: String, minWidth: Int): Bitmap? {
+	private fun decode(name: String, minWidth: Int, keyFolderId: Long?): Bitmap? {
 		// Covers are small; read the plaintext once and decode bounds and pixels from memory.
-		val bytes = cipher.openInputStream(files.cover(name)).use { it.readBytes() }
+		val bytes = cipher.openInputStream(files.cover(name), keyFolderId).use { it.readBytes() }
 		val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
 		BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
 		var sample = 1

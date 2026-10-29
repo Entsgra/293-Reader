@@ -7,10 +7,15 @@ import android.provider.OpenableColumns
 import android.system.ErrnoException
 import android.system.OsConstants
 import com.entsgra.reader.core.data.ApplicationScope
+import com.entsgra.reader.core.data.lock.BookDetails
+import com.entsgra.reader.core.data.lock.Sealer
+import com.entsgra.reader.core.data.lock.lockRootOf
 import com.entsgra.reader.core.database.DatabaseProvider
 import com.entsgra.reader.core.database.entity.BookEntity
 import com.entsgra.reader.core.model.BookFormatId
 import com.entsgra.reader.core.security.FileCipher
+import com.entsgra.reader.core.security.FolderLockedException
+import com.entsgra.reader.core.security.Keyring
 import com.entsgra.reader.reader.api.BookFormatRegistry
 import com.entsgra.reader.reader.api.FlowDocument
 import com.entsgra.reader.reader.api.PagedDocument
@@ -28,12 +33,12 @@ import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
@@ -50,14 +55,15 @@ sealed interface ImportState {
 }
 
 data class ImportFailure(val fileName: String, val reason: Reason) {
-	enum class Reason { UNSUPPORTED, RAR, UNREADABLE, NO_SPACE, FAILED }
+	enum class Reason { UNSUPPORTED, RAR, UNREADABLE, NO_SPACE, LOCKED, FAILED }
 }
 
 /**
  * Copies files picked through the Storage Access Framework into encrypted app storage. One
  * pass per file: the bytes are hashed while they are encrypted, so a duplicate costs one read
  * and its copy is thrown away. Runs in the application scope, so leaving the screen does not
- * cancel an import.
+ * cancel an import. Into a locked folder (unlocked at the time), files, covers and details go
+ * under the folder's key.
  */
 @Singleton
 class BookImporter @Inject constructor(
@@ -67,21 +73,30 @@ class BookImporter @Inject constructor(
 	private val cipher: FileCipher,
 	private val covers: CoverStore,
 	private val formats: BookFormatRegistry,
+	private val sealer: Sealer,
+	private val keyring: Keyring,
+	private val storage: StorageLock,
 	@ApplicationScope private val scope: CoroutineScope,
 ) {
 	private val _state = MutableStateFlow<ImportState>(ImportState.Idle)
 	val state: StateFlow<ImportState> = _state.asStateFlow()
 
-	/** Imports and the orphan sweep never overlap: the sweep would take a half-written file. */
-	private val storage = Mutex()
+	@Volatile
+	private var stopping = false
+	private var job: Job? = null
 
 	/** Starts importing [uris] into [folderId]. Ignored while another import runs. */
 	fun import(uris: List<Uri>, folderId: Long?) {
 		if (uris.isEmpty() || _state.value is ImportState.Running) return
 		_state.value = ImportState.Running(done = 0, total = uris.size)
-		scope.launch {
-			storage.withLock { withContext(Dispatchers.IO) { importAll(uris, folderId) } }
-		}
+		stopping = false
+		job = scope.launch { withContext(Dispatchers.IO) { importAll(uris, folderId) } }
+	}
+
+	/** Lets the file being imported finish, skips the rest, and returns once it is done. */
+	suspend fun stopAfterCurrent() {
+		stopping = true
+		job?.join()
 	}
 
 	/** Clears a finished import's summary. */
@@ -90,7 +105,7 @@ class BookImporter @Inject constructor(
 	}
 
 	/** Removes files a crash left without a database row. Call once at startup. */
-	suspend fun sweepOrphans() = storage.withLock {
+	suspend fun sweepOrphans() = storage.mutex.withLock {
 		val referenced = database.get().bookDao().allFileNames().toSet()
 		withContext(Dispatchers.IO) { files.sweep(referenced) }
 	}
@@ -99,9 +114,11 @@ class BookImporter @Inject constructor(
 		var imported = 0
 		var duplicates = 0
 		val failures = mutableListOf<ImportFailure>()
-		uris.forEachIndexed { index, uri ->
+		for ((index, uri) in uris.withIndex()) {
+			if (stopping) break
 			val name = displayName(uri)
-			when (val outcome = importOne(uri, name, folderId)) {
+			// Per file, so the sweep or a re-encryption waits for one book, not the whole batch.
+			when (val outcome = storage.mutex.withLock { importOne(uri, name, folderId) }) {
 				Outcome.Imported -> imported++
 				Outcome.Duplicate -> duplicates++
 				is Outcome.Failed -> failures += ImportFailure(name, outcome.reason)
@@ -114,29 +131,36 @@ class BookImporter @Inject constructor(
 	private suspend fun importOne(uri: Uri, name: String, folderId: Long?): Outcome {
 		val target = files.newBookFile()
 		try {
-			val copy = context.contentResolver.openInputStream(uri)?.use { raw -> copy(raw, name, target) }
+			val db = database.get()
+			val key = lockRootOf(folderId, db.folderDao().all().associateBy { it.id })
+			if (key != null && keyring[key] == null) return Outcome.Failed(ImportFailure.Reason.LOCKED)
+			val copy = context.contentResolver.openInputStream(uri)?.use { raw -> copy(raw, name, target, key) }
 				?: return Outcome.Failed(ImportFailure.Reason.UNREADABLE)
 			if (copy is Copy.Refused) return Outcome.Failed(copy.reason)
 			copy as Copy.Done
 
-			val books = database.get().bookDao()
+			val books = db.bookDao()
+			// Only books under the app key can be compared: sealed hashes are not readable here.
 			if (books.findByHash(copy.hash) != null) {
 				target.delete()
 				return Outcome.Duplicate
 			}
+			val stored = sealer.store(BookDetails(titleFrom(name), null, copy.hash), target.name, key)
 			val id = books.insert(
 				BookEntity(
 					folderId = folderId,
-					title = titleFrom(name),
-					author = null,
+					title = stored.title,
+					author = stored.author,
 					format = copy.format,
 					fileName = target.name,
 					fileSize = copy.size,
-					contentHash = copy.hash,
+					contentHash = stored.contentHash,
 					coverFileName = null,
 					pageCount = null,
 					addedAt = System.currentTimeMillis(),
 					lastOpenedAt = null,
+					keyFolderId = key,
+					sealed = stored.sealed,
 				),
 			)
 			enrich(id, target, copy.size, copy.format, keepDetails = false)
@@ -151,7 +175,7 @@ class BookImporter @Inject constructor(
 	}
 
 	/** Sniffs the header, then streams the file through SHA-256 into its encrypted copy. */
-	private fun copy(raw: InputStream, name: String, target: File): Copy {
+	private fun copy(raw: InputStream, name: String, target: File, keyFolderId: Long?): Copy {
 		val input = BufferedInputStream(raw, BUFFER_BYTES)
 		input.mark(FormatSniffer.HEADER_BYTES)
 		val header = input.readUpTo(FormatSniffer.HEADER_BYTES)
@@ -163,7 +187,7 @@ class BookImporter @Inject constructor(
 		}
 		val digest = MessageDigest.getInstance("SHA-256")
 		val counted = CountingInputStream(DigestInputStream(input, digest))
-		cipher.encrypt(counted, target)
+		cipher.encrypt(counted, target, keyFolderId)
 		return Copy.Done(format, digest.digest().toHex(), counted.count)
 	}
 
@@ -176,8 +200,11 @@ class BookImporter @Inject constructor(
 		val books = database.get().bookDao()
 		val pending = books.withMetadataBefore(METADATA_VERSION, formats.ids.map { it.name })
 		for (book in pending) {
+			// A locked folder's books wait until it is open at startup; they keep their old details.
+			val key = book.keyFolderId
+			if (key != null && keyring[key] == null) continue
 			// Per book, so an import started meanwhile waits for one book, not the whole pass.
-			storage.withLock {
+			storage.mutex.withLock {
 				withContext(Dispatchers.IO) {
 					enrich(book.id, files.book(book.fileName), book.fileSize, book.format, keepDetails = true)
 				}
@@ -194,25 +221,40 @@ class BookImporter @Inject constructor(
 	private suspend fun enrich(id: Long, file: File, size: Long, format: BookFormatId, keepDetails: Boolean) {
 		val reader = formats.forId(format) ?: return
 		val books = database.get().bookDao()
+		val key = books.get(id)?.keyFolderId
 		try {
-			reader.open(EncryptedBookSource(file, size, cipher)).use { doc ->
+			reader.open(EncryptedBookSource(file, size, cipher, key)).use { doc ->
 				val book = books.get(id) ?: return
+				val current = sealer.details(book) ?: return
 				val cover = when (doc) {
 					is PagedDocument -> doc.cover(CoverStore.COVER_WIDTH, CoverStore.COVER_HEIGHT)
 					is FlowDocument -> doc.cover(CoverStore.COVER_WIDTH, CoverStore.COVER_HEIGHT)
 				}
-				val coverName = cover?.let { bitmap -> covers.save(bitmap).also { bitmap.recycle() } }
+				val coverName = cover?.let { bitmap -> covers.save(bitmap, book.keyFolderId).also { bitmap.recycle() } }
 				val title = doc.metadata.title?.trim()?.takeIf { it.isNotEmpty() }
 				val author = doc.metadata.author?.trim()?.takeIf { it.isNotEmpty() }
-				books.applyMetadata(
-					id = id,
-					title = if (keepDetails) book.title else title ?: book.title,
-					author = if (keepDetails) book.author ?: author else author,
-					pageCount = (doc as? PagedDocument)?.pageCount ?: book.pageCount,
-					coverFileName = coverName ?: book.coverFileName,
-					direction = doc.metadata.readingDirection ?: book.readingDirection,
-					version = METADATA_VERSION,
+				val details = BookDetails(
+					title = if (keepDetails) current.title else title ?: current.title,
+					author = if (keepDetails) current.author ?: author else author,
+					contentHash = current.contentHash,
 				)
+				val pageCount = (doc as? PagedDocument)?.pageCount ?: book.pageCount
+				val direction = doc.metadata.readingDirection ?: book.readingDirection
+				if (book.keyFolderId == null) {
+					books.applyMetadata(
+						id = id,
+						title = details.title,
+						author = details.author,
+						pageCount = pageCount,
+						coverFileName = coverName ?: book.coverFileName,
+						direction = direction,
+						version = METADATA_VERSION,
+					)
+				} else {
+					val stored = sealer.store(details, book.fileName, book.keyFolderId)
+					books.writeDetails(id, stored.title, stored.author, stored.contentHash, stored.sealed)
+					books.applyMetadataSealed(id, pageCount, coverName ?: book.coverFileName, direction, METADATA_VERSION)
+				}
 			}
 		} catch (e: CancellationException) {
 			throw e
@@ -235,6 +277,7 @@ class BookImporter @Inject constructor(
 			.filterIsInstance<ErrnoException>()
 			.firstOrNull()?.errno
 		return when {
+			e is FolderLockedException -> ImportFailure.Reason.LOCKED
 			errno == OsConstants.ENOSPC -> ImportFailure.Reason.NO_SPACE
 			e is FileNotFoundException || e is SecurityException -> ImportFailure.Reason.UNREADABLE
 			e is SQLiteConstraintException -> ImportFailure.Reason.FAILED
