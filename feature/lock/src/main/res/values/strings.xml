@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="back">Back</string>
+	<string name="cancel">Cancel</string>
+	<string name="done">Done</string>
+	<string name="not_now">Not now</string>
+
+	<string name="lock_title_folder">Lock %s</string>
+	<string name="lock_title_app">App lock</string>
+	<string name="lock_title_change">Change PIN or passphrase</string>
+	<string name="lock_kind_pin">PIN</string>
+	<string name="lock_kind_passphrase">Passphrase</string>
+	<string name="lock_field_pin">PIN</string>
+	<string name="lock_field_passphrase">Passphrase</string>
+	<string name="lock_field_pin_again">PIN again</string>
+	<string name="lock_field_passphrase_again">Passphrase again</string>
+	<string name="lock_field_current_pin">Current PIN</string>
+	<string name="lock_field_current_passphrase">Current passphrase</string>
+	<string name="lock_forget_head">If you forget it</string>
+	<string name="lock_forget_folder">If you forget the PIN or passphrase, the books in this folder are gone for good. Nobody can recover them, and there is no reset.</string>
+	<string name="lock_forget_app">If you forget the PIN or passphrase, your whole library is gone for good. Nobody can recover it, and there is no reset.</string>
+	<string name="lock_understand">I understand</string>
+	<string name="lock_pin_note">A PIN protects against someone holding the phone. A passphrase is still recommended.</string>
+	<string name="lock_check_pin_short">Use 6 or more digits.</string>
+	<string name="lock_check_pin_digits">Use digits only.</string>
+	<string name="lock_check_passphrase_short">Use 8 or more characters.</string>
+	<string name="lock_check_mismatch">The two entries are not the same.</string>
+	<string name="lock_confirm_folder">Lock folder</string>
+	<string name="lock_confirm_app">Turn on app lock</string>
+	<string name="lock_confirm_change">Change</string>
+	<string name="lock_working">Sealing the keys</string>
+	<string name="lock_refused_inside">This folder is inside a locked folder, whose lock already covers it.</string>
+	<string name="lock_refused_contains">A folder inside this one is locked. Remove that lock first.</string>
+	<string name="lock_refused_already">This folder is already locked.</string>
+	<string name="lock_done_folder">Folder locked</string>
+	<string name="lock_done_folder_body">Its books are being encrypted under the folder\'s own key. They stay readable while the folder is unlocked.</string>
+	<string name="lock_done_app">App lock on</string>
+	<string name="lock_done_app_body">The library opens only with the PIN or passphrase from now on.</string>
+	<string name="lock_done_change">Changed</string>
+	<string name="lock_done_change_body">Use the new one from now on. Nothing had to be encrypted again.</string>
+	<string name="lock_biometric_offer">Unlock with fingerprint too</string>
+
+	<string name="unlock_head">Locked</string>
+	<string name="unlock_body_pin">Enter the PIN.</string>
+	<string name="unlock_body_passphrase">Enter the passphrase.</string>
+	<string name="unlock_button">Unlock</string>
+	<string name="unlock_biometric">Use fingerprint</string>
+	<string name="unlock_wrong_pin">Wrong PIN.</string>
+	<string name="unlock_wrong_passphrase">Wrong passphrase.</string>
+	<string name="unlock_wait">Too many tries. Try again in %s.</string>
+	<string name="unlock_checking">Checking</string>
+	<string name="unlock_invalidated">New fingerprints were added to this phone, so fingerprint unlock was turned off. Unlock with the PIN or passphrase, then turn it on again.</string>
+	<string name="unlock_reenroll_title">Use fingerprint again?</string>
+	<string name="unlock_reenroll_body">Turn fingerprint unlock back on.</string>
+	<string name="unlock_reenroll_confirm">Turn on</string>
+
+	<string name="biometric_prompt_unlock">Unlock</string>
+	<string name="biometric_prompt_enroll">Confirm your fingerprint</string>
+	<string name="biometric_prompt_cancel">Use PIN or passphrase</string>
+
+	<string name="remove_lock_title">Remove lock</string>
+	<string name="remove_lock_body">The folder\'s books go back under the app\'s own key. Enter the PIN or passphrase to confirm.</string>
+	<string name="app_lock_off_title">Turn off app lock</string>
+	<string name="app_lock_off_body">The library will open without a PIN or passphrase. Enter it to confirm.</string>
+	<string name="app_lock_off_confirm">Turn off</string>
+</resources>
