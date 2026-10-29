@@ -21,6 +21,7 @@ dependencies {
 	compileOnly(libs.compose.gradlePlugin)
 	compileOnly(libs.ksp.gradlePlugin)
 	compileOnly(libs.room.gradlePlugin)
+	compileOnly(libs.roborazzi.gradlePlugin)
 }
 
 gradlePlugin {
@@ -52,6 +53,10 @@ gradlePlugin {
 		register("jvmLibrary") {
 			id = "reader.jvm.library"
 			implementationClass = "JvmLibraryConventionPlugin"
+		}
+		register("androidScreenshots") {
+			id = "reader.android.screenshots"
+			implementationClass = "AndroidScreenshotsConventionPlugin"
 		}
 	}
 }
