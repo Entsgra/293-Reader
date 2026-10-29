@@ -60,8 +60,8 @@ internal fun LogContent(
 	contentType: (Int) -> Any?,
 	empty: Boolean,
 	onOpen: (LogEntry) -> Unit,
+	today: LocalDate = LocalDate.now(),
 ) {
-	val today = LocalDate.now().toEpochDay()
 	LazyColumn(
 		Modifier
 			.fillMaxSize()
@@ -100,12 +100,12 @@ internal fun LogContent(
 }
 
 @Composable
-private fun dayLabel(epochDay: Long, today: Long): String = when (epochDay) {
-	today -> stringResource(R.string.log_today)
-	today - 1 -> stringResource(R.string.log_yesterday)
+private fun dayLabel(epochDay: Long, today: LocalDate): String = when (epochDay) {
+	today.toEpochDay() -> stringResource(R.string.log_today)
+	today.toEpochDay() - 1 -> stringResource(R.string.log_yesterday)
 	else -> {
 		val date = LocalDate.ofEpochDay(epochDay)
-		val pattern = if (date.year == LocalDate.now().year) "EEE, MMM d" else "MMM d, yyyy"
+		val pattern = if (date.year == today.year) "EEE, MMM d" else "MMM d, yyyy"
 		date.format(DateTimeFormatter.ofPattern(pattern))
 	}
 }

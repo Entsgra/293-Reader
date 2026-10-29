@@ -66,6 +66,7 @@ import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.Folder
 import com.entsgra.reader.core.model.FolderItem
 import com.entsgra.reader.core.model.FolderLock
+import com.entsgra.reader.core.model.LibraryCounts
 import com.entsgra.reader.core.model.LibrarySort
 import com.entsgra.reader.core.model.SecretKind
 import com.entsgra.reader.core.model.secretKind
@@ -133,8 +134,6 @@ private fun LibraryContent(
 	val rekeying by viewModel.rekeying.collectAsStateWithLifecycle()
 	val books = viewModel.books.collectAsLazyPagingItems()
 	val results = viewModel.results.collectAsLazyPagingItems()
-	val isRoot = viewModel.folderId == null
-	val searching = isRoot && query.isNotBlank()
 
 	var dialog by remember { mutableStateOf<LibraryDialog?>(null) }
 	val scope = rememberCoroutineScope()
@@ -144,17 +143,90 @@ private fun LibraryContent(
 
 	LaunchedEffect(folderGone) { if (folderGone) onBack() }
 
+	LibraryGrid(
+		title = folder?.name,
+		isRoot = viewModel.folderId == null,
+		counts = counts,
+		folders = folders,
+		books = books,
+		results = results,
+		sort = sort,
+		query = query,
+		importState = importState,
+		rekeying = rekeying,
+		cover = { book, minWidth -> book.coverFileName?.let { viewModel.cover(it, minWidth, book.keyFolderId) } },
+		onBack = onBack,
+		onImport = {
+			viewModel.holdForPicker()
+			pick.launch(IMPORT_TYPES)
+		},
+		onNewFolder = { dialog = LibraryDialog.NewFolder },
+		onDismissImport = viewModel::dismissImport,
+		onQuery = viewModel::setQuery,
+		onSort = viewModel::setSort,
+		onOpenFolder = onOpenFolder,
+		onFolderActions = { item ->
+			scope.launch {
+				val biometric = item.folder.lock != FolderLock.NONE && viewModel.hasBiometric(item.folder.id)
+				dialog = LibraryDialog.FolderActions(item, biometric)
+			}
+		},
+		onOpenBook = onOpenBook,
+		onBookActions = { dialog = LibraryDialog.BookActions(it) },
+	)
+
+	LibraryDialogs(
+		dialog = dialog,
+		viewModel = viewModel,
+		insideLock = viewModel.lockRoot.collectAsStateWithLifecycle().value != null,
+		onOpenFolder = onOpenFolder,
+		onLockSetup = onLockSetup,
+		onDismiss = { dialog = null },
+		open = { dialog = it },
+	)
+}
+
+/**
+ * The library grid without its view model: title, key card, import and new-folder buttons,
+ * search, then folders and book covers (or search results). [cover] loads a book's cover image
+ * at least the given pixel width; null shows the title and format instead.
+ */
+@Composable
+internal fun LibraryGrid(
+	title: String?,
+	isRoot: Boolean,
+	counts: LibraryCounts?,
+	folders: List<FolderItem>,
+	books: LazyPagingItems<Book>,
+	results: LazyPagingItems<Book>,
+	sort: LibrarySort,
+	query: String,
+	importState: ImportState,
+	rekeying: Rekeying?,
+	cover: suspend (Book, Int) -> ImageBitmap?,
+	onBack: () -> Unit,
+	onImport: () -> Unit,
+	onNewFolder: () -> Unit,
+	onDismissImport: () -> Unit,
+	onQuery: (String) -> Unit,
+	onSort: (LibrarySort) -> Unit,
+	onOpenFolder: (Long) -> Unit,
+	onFolderActions: (FolderItem) -> Unit,
+	onOpenBook: (Long) -> Unit,
+	onBookActions: (Book) -> Unit,
+) {
+	val searching = isRoot && query.isNotBlank()
 	val coverPx = with(LocalDensity.current) { ReaderSize.coverMinWidth.roundToPx() * COVER_SCALE }
 	val tile: @Composable (Book) -> Unit = { book ->
 		val image by produceState<ImageBitmap?>(null, book.coverFileName) {
-			value = book.coverFileName?.let { viewModel.cover(it, coverPx, book.keyFolderId) }
+			value = cover(book, coverPx)
 		}
 		CoverTile(
 			title = book.title,
 			formatLabel = book.format.name,
 			image = image,
 			onClick = { onOpenBook(book.id) },
-			onLongClick = { dialog = LibraryDialog.BookActions(book) },
+			onLongClick = { onBookActions(book) },
 			onLongClickLabel = stringResource(R.string.show_actions),
 		)
 	}
@@ -172,7 +244,7 @@ private fun LibraryContent(
 	) {
 		fullWidth("title") {
 			ScreenTitle(
-				text = folder?.name ?: if (isRoot) stringResource(R.string.library_title) else "",
+				text = title ?: if (isRoot) stringResource(R.string.library_title) else "",
 				onBack = if (isRoot) null else onBack,
 				backLabel = stringResource(R.string.back),
 			)
@@ -193,25 +265,22 @@ private fun LibraryContent(
 			) {
 				PrimaryButton(
 					text = stringResource(R.string.library_import),
-					onClick = {
-						viewModel.holdForPicker()
-						pick.launch(IMPORT_TYPES)
-					},
+					onClick = onImport,
 					enabled = importState !is ImportState.Running,
 					modifier = Modifier.fillMaxWidth(),
 				)
 				SecondaryButton(
 					text = stringResource(R.string.library_new_folder),
-					onClick = { dialog = LibraryDialog.NewFolder },
+					onClick = onNewFolder,
 					modifier = Modifier.fillMaxWidth(),
 				)
 			}
 		}
 		(importState as? ImportState.Finished)?.let { finished ->
-			fullWidth("import-result") { ImportSummary(finished, onDone = viewModel::dismissImport) }
+			fullWidth("import-result") { ImportSummary(finished, onDone = onDismissImport) }
 		}
 		if (isRoot) {
-			fullWidth("search") { SearchField(query, viewModel::setQuery) }
+			fullWidth("search") { SearchField(query, onQuery) }
 		}
 		if (searching) {
 			fullWidth("results-head") { Section(stringResource(R.string.library_results)) }
@@ -226,12 +295,7 @@ private fun LibraryContent(
 					FolderRow(
 						item = item,
 						onOpen = { onOpenFolder(item.folder.id) },
-						onActions = {
-							scope.launch {
-								val biometric = item.folder.lock != FolderLock.NONE && viewModel.hasBiometric(item.folder.id)
-								dialog = LibraryDialog.FolderActions(item, biometric)
-							}
-						},
+						onActions = { onFolderActions(item) },
 					)
 				}
 			}
@@ -243,7 +307,7 @@ private fun LibraryContent(
 						ReaderChips(
 							options = LibrarySort.entries,
 							selected = sort,
-							onSelect = viewModel::setSort,
+							onSelect = onSort,
 							label = labels::getValue,
 							modifier = Modifier.padding(bottom = ReaderSpacing.space2),
 						)
@@ -253,16 +317,6 @@ private fun LibraryContent(
 			}
 		}
 	}
-
-	LibraryDialogs(
-		dialog = dialog,
-		viewModel = viewModel,
-		insideLock = viewModel.lockRoot.collectAsStateWithLifecycle().value != null,
-		onOpenFolder = onOpenFolder,
-		onLockSetup = onLockSetup,
-		onDismiss = { dialog = null },
-		open = { dialog = it },
-	)
 }
 
 @Composable
