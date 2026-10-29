@@ -6,6 +6,32 @@ Android Keystore.
 
 Distributed through GitHub releases only, self-signed.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><a href="docs/screenshots/library.png"><img src="docs/screenshots/library.png" width="200" alt="Library"></a><br>Library</td>
+    <td align="center"><a href="docs/screenshots/reader.png"><img src="docs/screenshots/reader.png" width="200" alt="Reader"></a><br>Reader</td>
+    <td align="center"><a href="docs/screenshots/reader-controls.png"><img src="docs/screenshots/reader-controls.png" width="200" alt="Reader controls"></a><br>Reader controls</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/screenshots/shelf.png"><img src="docs/screenshots/shelf.png" width="200" alt="Shelf"></a><br>Shelf</td>
+    <td align="center"><a href="docs/screenshots/log.png"><img src="docs/screenshots/log.png" width="200" alt="Log"></a><br>Log</td>
+    <td></td>
+  </tr>
+</table>
+
+Themes:
+
+<table>
+  <tr>
+    <td align="center"><a href="docs/screenshots/library.png"><img src="docs/screenshots/library.png" width="200" alt="Light theme"></a><br>Light</td>
+    <td align="center"><a href="docs/screenshots/library-dark.png"><img src="docs/screenshots/library-dark.png" width="200" alt="Dark theme"></a><br>Dark</td>
+    <td align="center"><a href="docs/screenshots/library-light-yellow.png"><img src="docs/screenshots/library-light-yellow.png" width="200" alt="Light yellow theme"></a><br>Light yellow</td>
+    <td align="center"><a href="docs/screenshots/library-light-pink.png"><img src="docs/screenshots/library-light-pink.png" width="200" alt="Light pink theme"></a><br>Light pink</td>
+  </tr>
+</table>
+
 ## Status
 
 | Phase | Scope | State |
@@ -139,6 +165,10 @@ Requirements: JDK 17 or newer, Android SDK with platform 37.
 ./gradlew connectedDebugAndroidTest     # instrumented tests, needs a device or emulator
 ```
 
+README screenshots (`docs/screenshots/`) are Roborazzi tests rendered on the JVM with fake data
+(Robolectric, SDK 37, so JDK 21 or newer): `./gradlew recordRoborazziDebug` re-records them,
+`./gradlew verifyRoborazziDebug` fails if the screens no longer match.
+
 ### Release signing
 
 1. Create a keystore: `keytool -genkeypair -v -keystore release.jks -keyalg RSA -keysize 4096 -validity 10000 -alias [alias]`
@@ -151,7 +181,7 @@ Without `keystore.properties` the release build still runs and produces an unsig
 ## Modules
 
 ```
-build-logic/        convention plugins (android, compose, feature, hilt, room, jvm)
+build-logic/        convention plugins (android, compose, feature, hilt, room, jvm, screenshots)
 app/                application, activity, navigation shell, signing
 core/model          pure Kotlin domain types
 core/designsystem   the only home for design tokens: colours, Jost type scale, spacing,
@@ -160,6 +190,7 @@ core/security       Keystore-backed Tink keys, file encryption, database key, Ar
                     secret wraps, folder keyring, app lock, unlock rate limit
 core/database       Room on SQLCipher: entities, DAOs, schema exports in schemas/
 core/data           repositories and settings
+core/screenshots    shared setup for the Roborazzi screenshot tests (test-only)
 reader/api          format-neutral reader contract, bitmap pool
 reader/archive      zip and 7z over a decrypting channel
 reader/pdf          PDF through PdfRenderer
