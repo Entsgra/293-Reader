@@ -1,10 +1,7 @@
 package com.entsgra.reader.feature.reader
 
 import android.graphics.Bitmap
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performTouchInput
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.BookFormatId
 import com.entsgra.reader.core.model.Locator
@@ -31,10 +28,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/**
- * The README's EPUB reader: Meditations, partway through the first book, with the controls
- * shown (as the reader opens) and then hidden by a tap in the middle.
- */
+/** The README's EPUB reader: Meditations, partway through the first book, controls shown as it opens. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [SCREENSHOT_SDK], qualifiers = SCREENSHOT_QUALIFIERS)
@@ -81,9 +75,6 @@ class ReaderScreenshotTest {
 			compose.onAllNodes(hasText("Rusticus", substring = true)).fetchSemanticsNodes().isNotEmpty()
 		}
 		compose.captureScreen("reader-controls")
-
-		compose.onRoot().performTouchInput { click(center) }
-		compose.captureScreen("reader")
 	}
 
 	private companion object {

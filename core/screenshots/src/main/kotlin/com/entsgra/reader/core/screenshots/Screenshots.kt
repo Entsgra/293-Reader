@@ -11,9 +11,6 @@ import androidx.compose.ui.test.onRoot
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
 import com.entsgra.reader.core.model.AppTheme
 import com.github.takahirom.roborazzi.captureRoboImage
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import org.robolectric.Shadows
@@ -29,9 +26,6 @@ const val SCREENSHOT_SDK = 37
 
 private const val SCREEN_WIDTH_PX = 1080
 private const val SCREEN_HEIGHT_PX = 2400
-
-/** The moment every screenshot is taken: Sunday 25 October 2026, 6 pm UTC. */
-val ScreenshotClock: Clock = Clock.fixed(Instant.parse("2026-10-25T18:00:00Z"), ZoneOffset.UTC)
 
 /**
  * A compose rule on the README device. 411 x 914 dp at 420 dpi rounds down to 1078 x 2399, so

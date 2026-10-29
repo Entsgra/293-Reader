@@ -11,24 +11,8 @@ Distributed through GitHub releases only, self-signed.
 <table>
   <tr>
     <td align="center"><a href="docs/screenshots/library.png"><img src="docs/screenshots/library.png" width="200" alt="Library"></a><br>Library</td>
-    <td align="center"><a href="docs/screenshots/reader.png"><img src="docs/screenshots/reader.png" width="200" alt="Reader"></a><br>Reader</td>
-    <td align="center"><a href="docs/screenshots/reader-controls.png"><img src="docs/screenshots/reader-controls.png" width="200" alt="Reader controls"></a><br>Reader controls</td>
-  </tr>
-  <tr>
     <td align="center"><a href="docs/screenshots/shelf.png"><img src="docs/screenshots/shelf.png" width="200" alt="Shelf"></a><br>Shelf</td>
-    <td align="center"><a href="docs/screenshots/log.png"><img src="docs/screenshots/log.png" width="200" alt="Log"></a><br>Log</td>
-    <td></td>
-  </tr>
-</table>
-
-Themes:
-
-<table>
-  <tr>
-    <td align="center"><a href="docs/screenshots/library.png"><img src="docs/screenshots/library.png" width="200" alt="Light theme"></a><br>Light</td>
-    <td align="center"><a href="docs/screenshots/library-dark.png"><img src="docs/screenshots/library-dark.png" width="200" alt="Dark theme"></a><br>Dark</td>
-    <td align="center"><a href="docs/screenshots/library-light-yellow.png"><img src="docs/screenshots/library-light-yellow.png" width="200" alt="Light yellow theme"></a><br>Light yellow</td>
-    <td align="center"><a href="docs/screenshots/library-light-pink.png"><img src="docs/screenshots/library-light-pink.png" width="200" alt="Light pink theme"></a><br>Light pink</td>
+    <td align="center"><a href="docs/screenshots/reader-controls.png"><img src="docs/screenshots/reader-controls.png" width="200" alt="Reader"></a><br>Reader</td>
   </tr>
 </table>
 

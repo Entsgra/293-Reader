@@ -6,7 +6,6 @@ import androidx.compose.ui.test.performScrollToKey
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.entsgra.reader.core.data.library.ImportState
-import com.entsgra.reader.core.model.AppTheme
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.BookFormatId
 import com.entsgra.reader.core.model.Folder
@@ -30,8 +29,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * The README's library, in each theme. No book has a cover file, so every tile shows the
- * generated face: title and format.
+ * The README's library. No book has a cover file, so every tile shows the generated face:
+ * title and format.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -62,22 +61,11 @@ class LibraryScreenshotTest {
 	)
 
 	@Test
-	fun library() = capture("library", AppTheme.LIGHT)
-
-	@Test
-	fun libraryDark() = capture("library-dark", AppTheme.DARK)
-
-	@Test
-	fun libraryLightYellow() = capture("library-light-yellow", AppTheme.YELLOW)
-
-	@Test
-	fun libraryLightPink() = capture("library-light-pink", AppTheme.PINK)
-
-	private fun capture(name: String, theme: AppTheme) {
-		compose.setScreen(theme) { Library() }
+	fun library() {
+		compose.setScreen { Library() }
 		// Past the key card and buttons, so the folders and the covers fill the screen.
 		compose.onNode(hasScrollToKeyAction()).performScrollToKey("folders-head")
-		compose.captureScreen(name)
+		compose.captureScreen("library")
 	}
 
 	@Composable
