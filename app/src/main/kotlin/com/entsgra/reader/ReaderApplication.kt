@@ -19,13 +19,16 @@ class ReaderApplication : Application() {
 	@Inject lateinit var settings: SettingsRepository
 	@Inject lateinit var importer: BookImporter
 	@Inject lateinit var bitmapPool: BitmapPool
+	@Inject lateinit var lockGuard: AppLockGuard
 
 	private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 	override fun onCreate() {
 		super.onCreate()
+		lockGuard.install(this, appScope)
 		// Unwrap the key and open the encrypted database off the main thread while the first
-		// frame draws, so the library's first query does not wait on Keystore.
+		// frame draws, so the library's first query does not wait on Keystore. With the app
+		// lock on, this waits for it to be unlocked.
 		appScope.launch {
 			databaseProvider.get()
 			// Files a crash left behind without a database row.

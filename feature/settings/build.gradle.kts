@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
 	implementation(project(":core:data"))
+	implementation(project(":feature:lock"))
 }

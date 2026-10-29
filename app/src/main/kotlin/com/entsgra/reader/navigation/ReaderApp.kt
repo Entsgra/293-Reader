@@ -26,6 +26,8 @@ import com.entsgra.reader.core.designsystem.theme.ReaderTheme
 import com.entsgra.reader.feature.library.BookRoute
 import com.entsgra.reader.feature.library.LibraryGraph
 import com.entsgra.reader.feature.library.libraryGraph
+import com.entsgra.reader.feature.lock.lockSetupScreen
+import com.entsgra.reader.feature.lock.navigateToLockSetup
 import com.entsgra.reader.feature.log.logScreen
 import com.entsgra.reader.feature.reader.ReaderRoute
 import com.entsgra.reader.feature.reader.navigateToReader
@@ -68,14 +70,19 @@ fun ReaderApp() {
 			popEnterTransition = { EnterTransition.None },
 			popExitTransition = { ExitTransition.None },
 		) {
-			libraryGraph(navController, onRead = navController::navigateToReader)
+			libraryGraph(
+				navController,
+				onRead = navController::navigateToReader,
+				onLockSetup = { folderId, change -> navController.navigateToLockSetup(folderId, change) },
+			)
+			lockSetupScreen(onDone = { navController.popBackStack() })
 			readerScreen(onBack = { navController.popBackStack() })
 			shelfGraph(navController)
 			logScreen(
 				onOpenEbook = { navController.navigate(BookRoute(it)) },
 				onOpenPhysical = navController::navigateToPhysicalBook,
 			)
-			settingsScreen()
+			settingsScreen(onAppLockSetup = { change -> navController.navigateToLockSetup(null, change) })
 		}
 		if (!reading) ReaderBottomBar {
 			TopLevelDestination.entries.forEach { item ->

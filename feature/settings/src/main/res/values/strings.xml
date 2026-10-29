@@ -6,4 +6,20 @@
 	<string name="settings_theme_dark">Dark</string>
 	<string name="settings_theme_yellow">Yellow</string>
 	<string name="settings_theme_pink">Pink</string>
+	<string name="settings_locks">Locks</string>
+	<string name="settings_app_lock">App lock</string>
+	<string name="settings_change_secret">Change PIN or passphrase</string>
+	<string name="settings_app_fingerprint">Unlock with fingerprint</string>
+	<string name="settings_lock_now">Lock now</string>
+	<string name="settings_lock_after">Lock after</string>
+	<string name="settings_lock_immediately">At once</string>
+	<string name="settings_lock_one">1 min</string>
+	<string name="settings_lock_five">5 min</string>
+	<string name="settings_lock_fifteen">15 min</string>
+	<string name="settings_lock_after_note">How long the app can stay in the background before locked folders, and the app lock, close. Locked folders also close when the screen turns off.</string>
+	<string name="settings_block_screenshots">Block screenshots everywhere</string>
+	<string name="settings_block_screenshots_note">Locked folders and the unlock screens are kept out of screenshots and recent apps either way.</string>
+	<string name="settings_app_lock_off_title">Turn off app lock</string>
+	<string name="settings_app_lock_off_body">The library will open without a PIN or passphrase. Enter it to confirm.</string>
+	<string name="settings_app_lock_off_confirm">Turn off</string>
 </resources>
