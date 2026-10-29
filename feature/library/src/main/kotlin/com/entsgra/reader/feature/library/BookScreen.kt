@@ -28,6 +28,7 @@ import com.entsgra.reader.core.designsystem.component.SecondaryButton
 import com.entsgra.reader.core.designsystem.component.SweepKeyCard
 import com.entsgra.reader.core.designsystem.component.WindowPlate
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
+import com.entsgra.reader.core.designsystem.theme.SecureWindow
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.Folder
 import java.time.Instant
@@ -51,6 +52,7 @@ internal fun BookScreen(
 	LaunchedEffect(state) { if (state == BookUiState.Gone) onBack() }
 	val ready = state as? BookUiState.Ready ?: return
 	val book = ready.book
+	if (book.keyFolderId != null) SecureWindow()
 
 	Column(
 		Modifier

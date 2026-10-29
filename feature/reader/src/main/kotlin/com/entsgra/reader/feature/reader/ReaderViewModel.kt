@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.entsgra.reader.core.data.SettingsRepository
+import com.entsgra.reader.core.data.lock.BookLockedException
 import com.entsgra.reader.core.data.reader.ReaderRepository
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.Locator
@@ -33,7 +34,7 @@ import kotlinx.coroutines.launch
 sealed interface ReaderUiState {
 	data object Loading : ReaderUiState
 
-	/** The book was deleted while the reader was opening. */
+	/** The book was deleted, or the locked folder it is in closed: the reader leaves. */
 	data object Gone : ReaderUiState
 
 	data class Failed(val reason: BookOpenException.Reason) : ReaderUiState
@@ -79,6 +80,10 @@ class ReaderViewModel @Inject constructor(
 
 	val textSize: StateFlow<ReadingTextSize> = settings.readingTextSize
 		.stateIn(viewModelScope, SharingStarted.Eagerly, ReadingTextSize.MEDIUM)
+
+	/** The book is in a locked folder: keep the window out of screenshots and recents. */
+	private val _secure = MutableStateFlow(false)
+	val secure: StateFlow<Boolean> = _secure.asStateFlow()
 
 	init {
 		viewModelScope.launch { open() }
@@ -132,13 +137,23 @@ class ReaderViewModel @Inject constructor(
 			_state.value = ReaderUiState.Gone
 			return
 		}
+		_secure.value = book.keyFolderId != null
 		val opened = try {
 			repository.open(book)
 		} catch (e: BookOpenException) {
 			_state.value = ReaderUiState.Failed(e.reason)
 			return
+		} catch (_: BookLockedException) {
+			_state.value = ReaderUiState.Gone
+			return
 		}
 		document = opened
+		if (book.keyFolderId != null) {
+			viewModelScope.launch {
+				repository.lockedOut(book).first { it }
+				letGo()
+			}
+		}
 		val saved = repository.lastPosition(bookId)
 		when (opened) {
 			is PagedDocument -> {
@@ -166,6 +181,15 @@ class ReaderViewModel @Inject constructor(
 			}
 		}
 		beginSessionIfReady()
+	}
+
+	/** The folder locked under the reader: log the sitting, close the book, leave. */
+	private fun letGo() {
+		endSession()
+		savePosition()
+		document?.let(repository::close)
+		document = null
+		_state.value = ReaderUiState.Gone
 	}
 
 	private fun beginSessionIfReady() {

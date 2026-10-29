@@ -28,6 +28,7 @@ import com.entsgra.reader.core.designsystem.component.ErrorNotice
 import com.entsgra.reader.core.designsystem.component.ScreenTitle
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.designsystem.theme.ReaderTheme
+import com.entsgra.reader.core.designsystem.theme.SecureWindow
 import com.entsgra.reader.reader.api.BookOpenException
 
 @Composable
@@ -40,6 +41,8 @@ internal fun ReaderScreen(
 	val page by viewModel.page.collectAsStateWithLifecycle()
 	val text by viewModel.text.collectAsStateWithLifecycle()
 	val textSize by viewModel.textSize.collectAsStateWithLifecycle()
+	val secure by viewModel.secure.collectAsStateWithLifecycle()
+	if (secure) SecureWindow()
 
 	LifecycleStartEffect(viewModel) {
 		viewModel.onStart()

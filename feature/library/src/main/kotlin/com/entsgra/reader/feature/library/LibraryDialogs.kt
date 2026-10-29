@@ -32,6 +32,7 @@ import com.entsgra.reader.core.designsystem.icon.ReaderIcons
 import com.entsgra.reader.core.designsystem.theme.ReaderSize
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
 import com.entsgra.reader.core.model.Book
+import com.entsgra.reader.core.model.FolderLock
 import com.entsgra.reader.core.model.FolderNode
 import kotlinx.coroutines.launch
 
@@ -125,7 +126,9 @@ internal fun BookDetailsDialog(
 
 /**
  * Pick a destination folder. [currentFolderId] is marked and cannot be picked; with
- * [movingFolderId], that folder and everything below it are left out.
+ * [movingFolderId], that folder and everything below it are left out. Closed locked folders
+ * are marked and cannot be picked, and neither can anything inside a locked folder when the
+ * folder being moved holds a lock of its own (locks do not nest).
  */
 @Composable
 internal fun MoveDialog(
@@ -136,7 +139,9 @@ internal fun MoveDialog(
 	movingFolderId: Long? = null,
 ) {
 	val choices = remember(tree, movingFolderId) { withoutSubtree(tree, movingFolderId) }
+	val blocked = remember(tree, movingFolderId) { blockedDestinations(tree, movingFolderId) }
 	val here = stringResource(R.string.move_current)
+	val locked = stringResource(R.string.move_locked)
 	ReaderDialog(title = stringResource(R.string.move_title), onDismiss = onDismiss) {
 		LazyColumn(Modifier.heightIn(max = ReaderSize.rowHeight * MOVE_ROWS_VISIBLE)) {
 			item(key = "root") {
@@ -157,6 +162,8 @@ internal fun MoveDialog(
 					depth = node.depth + 1,
 					isCurrent = node.folder.id == currentFolderId,
 					hereLabel = here,
+					blockedLabel = if (node.folder.id in blocked) locked else null,
+					locked = node.folder.lock != FolderLock.NONE,
 					onClick = {
 						onMove(node.folder.id)
 						onDismiss()
@@ -171,12 +178,24 @@ internal fun MoveDialog(
 }
 
 @Composable
-private fun DestinationRow(name: String, depth: Int, isCurrent: Boolean, hereLabel: String, onClick: () -> Unit) {
+private fun DestinationRow(
+	name: String,
+	depth: Int,
+	isCurrent: Boolean,
+	hereLabel: String,
+	onClick: () -> Unit,
+	blockedLabel: String? = null,
+	locked: Boolean = false,
+) {
 	ReaderRow(
 		title = name,
-		leadingIcon = if (depth == 0) ReaderIcons.Library else ReaderIcons.Folder,
-		trailing = if (isCurrent) hereLabel else null,
-		onClick = if (isCurrent) null else onClick,
+		leadingIcon = when {
+			depth == 0 -> ReaderIcons.Library
+			locked -> ReaderIcons.Lock
+			else -> ReaderIcons.Folder
+		},
+		trailing = if (isCurrent) hereLabel else blockedLabel,
+		onClick = if (isCurrent || blockedLabel != null) null else onClick,
 		modifier = Modifier.padding(start = ReaderSpacing.space4 * depth.coerceAtMost(MAX_INDENT)),
 	)
 }
@@ -205,22 +224,51 @@ internal fun DeleteDialog(
 	}
 }
 
-/** Long-press actions: one row per action, delete last and apart. */
+/** Long-press actions: one row per action, delete last and apart. No delete without [onDelete]. */
 @Composable
 internal fun ActionsDialog(
 	title: String,
 	actions: List<Pair<String, () -> Unit>>,
-	onDelete: () -> Unit,
+	onDelete: (() -> Unit)?,
 	onDismiss: () -> Unit,
 ) {
 	ReaderDialog(title = title, onDismiss = onDismiss) {
 		actions.forEach { (label, action) ->
 			ReaderRow(title = label.uppercase(), onClick = action)
 		}
-		DialogButtons {
-			DestructiveButton(stringResource(R.string.delete), onClick = onDelete, modifier = Modifier.fillMaxWidth())
+		if (onDelete != null) {
+			DialogButtons {
+				DestructiveButton(stringResource(R.string.delete), onClick = onDelete, modifier = Modifier.fillMaxWidth())
+			}
 		}
 	}
+}
+
+/**
+ * Destinations that cannot be picked: closed locked folders, and, when [movingFolderId]'s
+ * subtree holds a lock, every folder at or inside a locked one.
+ */
+internal fun blockedDestinations(tree: List<FolderNode>, movingFolderId: Long?): Set<Long> {
+	val closed = tree.filter { it.closed }.map { it.folder.id }.toSet()
+	val start = tree.indexOfFirst { it.folder.id == movingFolderId }
+	if (start < 0) return closed
+	val depth = tree[start].depth
+	var end = start + 1
+	while (end < tree.size && tree[end].depth > depth) end++
+	val holdsLock = tree.subList(start, end).any { it.folder.lock != FolderLock.NONE }
+	return if (holdsLock) closed + insideLocks(tree) else closed
+}
+
+/** Folders that are locked or below a locked one; the tree is depth first. */
+internal fun insideLocks(tree: List<FolderNode>): Set<Long> {
+	val out = HashSet<Long>()
+	var lockedDepth = -1
+	for (node in tree) {
+		if (lockedDepth >= 0 && node.depth <= lockedDepth) lockedDepth = -1
+		if (lockedDepth < 0 && node.folder.lock != FolderLock.NONE) lockedDepth = node.depth
+		if (lockedDepth >= 0) out += node.folder.id
+	}
+	return out
 }
 
 /** [tree] without [folderId] and its descendants: the flattened tree keeps them contiguous. */

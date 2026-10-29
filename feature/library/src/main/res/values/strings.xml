@@ -57,6 +57,19 @@
 	<string name="folder_name_locked">The folder is locked. Unlock it and try again.</string>
 	<string name="move_title">Move to</string>
 	<string name="move_current">Here now</string>
+	<string name="move_locked">Locked</string>
+	<string name="folder_lock">Lock</string>
+	<string name="folder_lock_now">Lock now</string>
+	<string name="folder_unlock">Unlock</string>
+	<string name="folder_change_secret">Change PIN or passphrase</string>
+	<string name="folder_fingerprint_on">Unlock with fingerprint</string>
+	<string name="folder_fingerprint_off">Stop fingerprint unlock</string>
+	<string name="remove_lock">Remove lock</string>
+	<string name="remove_lock_body">The folder\'s books go back under the app\'s own key, and the folder opens without a PIN or passphrase. Enter it to confirm.</string>
+	<plurals name="rekeying">
+		<item quantity="one">Encrypting %1$d of %2$d book</item>
+		<item quantity="other">Encrypting %1$d of %2$d books</item>
+	</plurals>
 
 	<string name="delete_folder_title">Delete folder?</string>
 	<string name="delete_folder_empty">Deletes this empty folder.</string>

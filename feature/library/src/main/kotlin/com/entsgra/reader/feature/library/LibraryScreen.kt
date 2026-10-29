@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.entsgra.reader.core.data.library.ImportFailure
 import com.entsgra.reader.core.data.library.ImportState
+import com.entsgra.reader.core.data.lock.Rekeying
 import com.entsgra.reader.core.designsystem.component.BodyText
 import com.entsgra.reader.core.designsystem.component.CoverTile
 import com.entsgra.reader.core.designsystem.component.CoverTilePlaceholder
@@ -59,16 +61,26 @@ import com.entsgra.reader.core.designsystem.component.WindowPlate
 import com.entsgra.reader.core.designsystem.icon.ReaderIcons
 import com.entsgra.reader.core.designsystem.theme.ReaderSize
 import com.entsgra.reader.core.designsystem.theme.ReaderSpacing
+import com.entsgra.reader.core.designsystem.theme.SecureWindow
 import com.entsgra.reader.core.model.Book
 import com.entsgra.reader.core.model.Folder
 import com.entsgra.reader.core.model.FolderItem
+import com.entsgra.reader.core.model.FolderLock
 import com.entsgra.reader.core.model.LibrarySort
+import com.entsgra.reader.core.model.SecretKind
+import com.entsgra.reader.core.model.secretKind
+import com.entsgra.reader.feature.lock.ConfirmSecretDialog
+import com.entsgra.reader.feature.lock.ReenrollOffer
+import com.entsgra.reader.feature.lock.UnlockGate
+import com.entsgra.reader.feature.lock.biometricsAvailable
+import com.entsgra.reader.feature.lock.rememberBiometricLauncher
 import kotlinx.coroutines.launch
 
 /** What a long press or a button opened. One dialog at a time. */
 private sealed interface LibraryDialog {
 	data object NewFolder : LibraryDialog
-	data class FolderActions(val folder: Folder) : LibraryDialog
+	data class FolderActions(val item: FolderItem, val biometric: Boolean) : LibraryDialog
+	data class RemoveLock(val folder: Folder) : LibraryDialog
 	data class RenameFolder(val folder: Folder) : LibraryDialog
 	data class MoveFolder(val folder: Folder) : LibraryDialog
 	data class DeleteFolder(val folder: Folder, val books: Int, val folders: Int) : LibraryDialog
@@ -83,7 +95,33 @@ internal fun LibraryScreen(
 	onOpenFolder: (Long) -> Unit,
 	onOpenBook: (Long) -> Unit,
 	onBack: () -> Unit,
+	onLockSetup: (folderId: Long, change: Boolean) -> Unit,
 	viewModel: LibraryViewModel = hiltViewModel(),
+) {
+	val lockRoot by viewModel.lockRoot.collectAsStateWithLifecycle()
+	val closed by viewModel.closed.collectAsStateWithLifecycle()
+	val lockFolder by viewModel.lockFolder.collectAsStateWithLifecycle()
+	if (lockRoot != null) SecureWindow()
+	ReenrollOffer(viewModel.unlock)
+	if (closed) {
+		UnlockGate(
+			title = lockFolder?.name.orEmpty(),
+			kind = lockFolder?.lock?.secretKind() ?: SecretKind.PASSPHRASE,
+			controller = viewModel.unlock,
+			onBack = if (viewModel.folderId == null) null else onBack,
+		)
+		return
+	}
+	LibraryContent(onOpenFolder, onOpenBook, onBack, onLockSetup, viewModel)
+}
+
+@Composable
+private fun LibraryContent(
+	onOpenFolder: (Long) -> Unit,
+	onOpenBook: (Long) -> Unit,
+	onBack: () -> Unit,
+	onLockSetup: (folderId: Long, change: Boolean) -> Unit,
+	viewModel: LibraryViewModel,
 ) {
 	val folder by viewModel.folder.collectAsStateWithLifecycle()
 	val folderGone by viewModel.folderGone.collectAsStateWithLifecycle()
@@ -92,12 +130,14 @@ internal fun LibraryScreen(
 	val sort by viewModel.sort.collectAsStateWithLifecycle()
 	val query by viewModel.query.collectAsStateWithLifecycle()
 	val importState by viewModel.importState.collectAsStateWithLifecycle()
+	val rekeying by viewModel.rekeying.collectAsStateWithLifecycle()
 	val books = viewModel.books.collectAsLazyPagingItems()
 	val results = viewModel.results.collectAsLazyPagingItems()
 	val isRoot = viewModel.folderId == null
 	val searching = isRoot && query.isNotBlank()
 
 	var dialog by remember { mutableStateOf<LibraryDialog?>(null) }
+	val scope = rememberCoroutineScope()
 	val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
 		viewModel.import(uris)
 	}
@@ -107,7 +147,7 @@ internal fun LibraryScreen(
 	val coverPx = with(LocalDensity.current) { ReaderSize.coverMinWidth.roundToPx() * COVER_SCALE }
 	val tile: @Composable (Book) -> Unit = { book ->
 		val image by produceState<ImageBitmap?>(null, book.coverFileName) {
-			value = book.coverFileName?.let { viewModel.cover(it, coverPx) }
+			value = book.coverFileName?.let { viewModel.cover(it, coverPx, book.keyFolderId) }
 		}
 		CoverTile(
 			title = book.title,
@@ -142,6 +182,7 @@ internal fun LibraryScreen(
 				books = counts?.books,
 				folders = counts?.folders,
 				importState = importState,
+				rekeying = rekeying,
 				emptyText = stringResource(if (isRoot) R.string.library_empty else R.string.library_folder_empty),
 			)
 		}
@@ -152,7 +193,10 @@ internal fun LibraryScreen(
 			) {
 				PrimaryButton(
 					text = stringResource(R.string.library_import),
-					onClick = { pick.launch(IMPORT_TYPES) },
+					onClick = {
+						viewModel.holdForPicker()
+						pick.launch(IMPORT_TYPES)
+					},
 					enabled = importState !is ImportState.Running,
 					modifier = Modifier.fillMaxWidth(),
 				)
@@ -182,7 +226,12 @@ internal fun LibraryScreen(
 					FolderRow(
 						item = item,
 						onOpen = { onOpenFolder(item.folder.id) },
-						onActions = { dialog = LibraryDialog.FolderActions(item.folder) },
+						onActions = {
+							scope.launch {
+								val biometric = item.folder.lock != FolderLock.NONE && viewModel.hasBiometric(item.folder.id)
+								dialog = LibraryDialog.FolderActions(item, biometric)
+							}
+						},
 					)
 				}
 			}
@@ -205,18 +254,33 @@ internal fun LibraryScreen(
 		}
 	}
 
-	LibraryDialogs(dialog, viewModel, onDismiss = { dialog = null }, open = { dialog = it })
+	LibraryDialogs(
+		dialog = dialog,
+		viewModel = viewModel,
+		insideLock = viewModel.lockRoot.collectAsStateWithLifecycle().value != null,
+		onOpenFolder = onOpenFolder,
+		onLockSetup = onLockSetup,
+		onDismiss = { dialog = null },
+		open = { dialog = it },
+	)
 }
 
 @Composable
 private fun LibraryDialogs(
 	dialog: LibraryDialog?,
 	viewModel: LibraryViewModel,
+	insideLock: Boolean,
+	onOpenFolder: (Long) -> Unit,
+	onLockSetup: (folderId: Long, change: Boolean) -> Unit,
 	onDismiss: () -> Unit,
 	open: (LibraryDialog) -> Unit,
 ) {
 	val tree by viewModel.folderTree.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
+	val context = LocalContext.current
+	val biometrics = remember(context) { biometricsAvailable(context) }
+	val launcher = rememberBiometricLauncher()
+	val enrollTitle = stringResource(R.string.folder_fingerprint_on)
 	when (dialog) {
 		null -> Unit
 		LibraryDialog.NewFolder -> FolderNameDialog(
@@ -226,18 +290,60 @@ private fun LibraryDialogs(
 			onDismiss = onDismiss,
 			onConfirm = viewModel::createFolder,
 		)
-		is LibraryDialog.FolderActions -> ActionsDialog(
-			title = dialog.folder.name,
-			actions = listOf(
-				stringResource(R.string.rename) to { open(LibraryDialog.RenameFolder(dialog.folder)) },
-				stringResource(R.string.move) to { open(LibraryDialog.MoveFolder(dialog.folder)) },
-			),
-			onDelete = {
-				scope.launch {
-					val counts = viewModel.countsOf(dialog.folder.id)
-					open(LibraryDialog.DeleteFolder(dialog.folder, counts.books, counts.folders))
+		is LibraryDialog.FolderActions -> {
+			val folder = dialog.item.folder
+			val locked = folder.lock != FolderLock.NONE
+			val actions = buildList<Pair<String, () -> Unit>> {
+				if (dialog.item.closed) {
+					add(stringResource(R.string.folder_unlock) to { onDismiss(); onOpenFolder(folder.id) })
+				} else {
+					add(stringResource(R.string.rename) to { open(LibraryDialog.RenameFolder(folder)) })
+					add(stringResource(R.string.move) to { open(LibraryDialog.MoveFolder(folder)) })
+					if (!locked && !insideLock) add(stringResource(R.string.folder_lock) to { onDismiss(); onLockSetup(folder.id, false) })
+					if (locked) {
+						add(stringResource(R.string.folder_lock_now) to { viewModel.lockNow(folder.id); onDismiss() })
+						add(stringResource(R.string.folder_change_secret) to { onDismiss(); onLockSetup(folder.id, true) })
+						if (dialog.biometric) {
+							add(stringResource(R.string.folder_fingerprint_off) to { viewModel.stopBiometric(folder.id); onDismiss() })
+						} else if (biometrics) {
+							add(
+								stringResource(R.string.folder_fingerprint_on) to {
+									onDismiss()
+									scope.launch {
+										launcher.authenticate(viewModel.enrollCipher(folder.id), enrollTitle) {
+											viewModel.enrolled(folder.id, it)
+										}
+									}
+								},
+							)
+						}
+						add(stringResource(R.string.remove_lock) to { open(LibraryDialog.RemoveLock(folder)) })
+					}
 				}
-			},
+			}
+			ActionsDialog(
+				title = folder.name,
+				actions = actions,
+				// A closed locked folder cannot be deleted from outside: that takes its secret.
+				onDelete = if (dialog.item.closed) {
+					null
+				} else {
+					{
+						scope.launch {
+							val counts = viewModel.countsOf(folder.id)
+							open(LibraryDialog.DeleteFolder(folder, counts.books, counts.folders))
+						}
+					}
+				},
+				onDismiss = onDismiss,
+			)
+		}
+		is LibraryDialog.RemoveLock -> ConfirmSecretDialog(
+			title = stringResource(R.string.remove_lock),
+			body = stringResource(R.string.remove_lock_body),
+			kind = dialog.folder.lock.secretKind() ?: SecretKind.PASSPHRASE,
+			confirmLabel = stringResource(R.string.remove_lock),
+			onConfirm = { viewModel.removeLock(dialog.folder.id, it) },
 			onDismiss = onDismiss,
 		)
 		is LibraryDialog.RenameFolder -> FolderNameDialog(
@@ -297,9 +403,9 @@ private fun LibraryDialogs(
 	}
 }
 
-/** The key card: the library's figures, and the import while it runs. */
+/** The key card: the library's figures, and the import or re-encryption while it runs. */
 @Composable
-private fun KeyCard(books: Int?, folders: Int?, importState: ImportState, emptyText: String) {
+private fun KeyCard(books: Int?, folders: Int?, importState: ImportState, rekeying: Rekeying?, emptyText: String) {
 	SweepKeyCard {
 		WindowPlate(
 			label = stringResource(R.string.library_books),
@@ -310,6 +416,7 @@ private fun KeyCard(books: Int?, folders: Int?, importState: ImportState, emptyT
 		when {
 			importState is ImportState.Running ->
 				LiveStatus(stringResource(R.string.importing, importState.done + 1, importState.total))
+			rekeying != null -> LiveStatus(pluralStringResource(R.plurals.rekeying, rekeying.total, rekeying.done + 1, rekeying.total))
 			books == 0 && folders == 0 -> BodyText(emptyText)
 		}
 	}
@@ -389,7 +496,7 @@ private fun FolderRow(item: FolderItem, onOpen: () -> Unit, onActions: () -> Uni
 	ReaderRow(
 		title = item.folder.name,
 		trailing = item.itemCount.toString(),
-		leadingIcon = ReaderIcons.Folder,
+		leadingIcon = if (item.folder.lock == FolderLock.NONE) ReaderIcons.Folder else ReaderIcons.Lock,
 		onClick = onOpen,
 		onLongClick = onActions,
 		onLongClickLabel = stringResource(R.string.show_actions),
